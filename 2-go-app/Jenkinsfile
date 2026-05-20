@@ -65,9 +65,7 @@ spec:
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.20.0-debug
-    command: ["/kaniko/sh"]
-    args: ["-c", "while true; do read; done"]
-    tty: true
+    command: ["cat"]
     env:
     - name: PATH
       value: /usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/kaniko
