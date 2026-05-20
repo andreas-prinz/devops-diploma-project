@@ -59,8 +59,8 @@ pipeline {
                 kubernetes {
                     customWorkspace "2-go-app"
                     containerTemplate(
-                        name: kaniko
-                        image: gcr.io/kaniko-project/executor:v1.20.0-debug
+                        name: 'kaniko',
+                        image: 'gcr.io/kaniko-project/executor:v1.20.0-debug',
                         ttyEnabled: true,
                         command: 'cat',
                         resourceRequestCpu: '200m',
