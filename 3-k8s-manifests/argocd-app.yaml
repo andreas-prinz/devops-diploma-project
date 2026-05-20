@@ -1,0 +1,20 @@
+# k8s-manifests/argocd-app.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: go-app-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    # Використовуємо внутрішній DNS кластера або наш домен
+    repoURL: 'http://gitlab-webservice.gitlab.svc.cluster.local/root/go-app-manifests.git'
+    targetRevision: HEAD
+    path: k8s-manifests # папка, де лежить твій rollout.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: diploma-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeel: true

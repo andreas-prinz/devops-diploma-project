@@ -1,0 +1,44 @@
+# rollout.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: go-app-rollout
+  namespace: diploma-prod
+spec:
+  replicas: 5 # Ставимо 5 реплік, щоб відсотки трафіку ділилися рівно (20% = 1 пода)
+  selector:
+    matchLabels:
+      app: go-app
+  template:
+    metadata:
+      labels:
+        app: go-app
+    spec:
+      containers:
+      - name: go-app
+        image: gcr.io/your-project/go-app:v1 # Цей тег буде оновлювати Jenkins
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+  
+  # Найважливіша частина - стратегія Canary
+  strategy:
+    canary:
+      stableService: go-app-stable
+      canaryService: go-app-canary
+      steps:
+      - setWeight: 20      # Крок 1: Пустити 20% трафіку на нову версію (V2)
+      - pause: 
+          duration: 5m     # Крок 2: Автоматична пауза на 5 хвилин для збору метрик
+      - setWeight: 50      # Крок 3: Збільшити трафік до 50%
+      - pause: {}          # Крок 4: Безкінечна пауза. Чекає ручного підтвердження інженера!

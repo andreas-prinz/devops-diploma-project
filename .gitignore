@@ -1,0 +1,12 @@
+# Ігноруємо приховані папки кешу Terragrunt
+.terragrunt-cache/
+
+# Ігноруємо файли станів Terraform, якщо вони зберігаються локально
+*.tfstate
+*.tfstate.*
+
+# Ігноруємо логи помилок
+*.log
+
+.terraform.lock.hcl
+**/.terraform.lock.hcl

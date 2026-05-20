@@ -1,0 +1,50 @@
+# Jenkinsfile Groovy
+pipeline {
+    agent any
+    
+    environment {
+        // Приклад адреси Nexus у кластері:
+        DOCKER_IMAGE = "nexus-nexus-repository-manager.nexus.svc.cluster.local:8082/go-app"
+        VERSION = "v${env.BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // -v дає детальний лог кожного тесту
+                // -race перевіряє код на проблеми з конкурентністю (race conditions)
+                sh 'go test -v -race ./...'
+            }
+        }
+
+        stage('Build & Push Docker Image') {
+            steps {
+                sh "docker build -t ${DOCKER_IMAGE}:${VERSION} ."
+                sh "docker push ${DOCKER_IMAGE}:${VERSION}"
+            }
+        }
+
+        stage('Update Manifests (GitOps)') {
+            steps {
+                // Jenkins заходить у репозиторій з маніфестами і змінює тег образу
+                // Це тригерить ArgoCD на розгортання
+                sh """
+                   rm -rf manifests-repo
+                   # Копіюємо з внутрішнього GitLab
+                   git clone http://gitlab-webservice.gitlab.svc.cluster.local/root/go-app-manifests.git manifests-repo
+                   cd manifests-repo
+                   sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|' k8s-manifests/rollout.yaml
+                   git add k8s-manifests/rollout.yaml
+                   git commit -m "Update image to ${VERSION}"
+                   git push origin main
+                """
+            }
+        }
+    }
+}
