@@ -2,7 +2,7 @@
 
 # Стейдж 1: Збірка (Builder)
 # Використовуємо офіційний образ Go
-FROM golang:1.21-alpine AS builder
+FROM golang:1.26.3-alpine AS builder
 
 # Встановлюємо робочу директорію
 WORKDIR /app
