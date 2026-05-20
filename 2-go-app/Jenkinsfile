@@ -65,8 +65,8 @@ spec:
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.20.0-debug
-    command: ["sleep"]
-    args: ["99d"]
+    command: ["/kaniko/sh"]
+    args: ["-c", "while true; do read; done"]
     tty: true
     env:
     - name: PATH
