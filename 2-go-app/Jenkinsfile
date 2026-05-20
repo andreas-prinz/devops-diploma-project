@@ -76,14 +76,14 @@ spec:
                 }
             }
             steps {
-                withCredentials([usernamePassword(credentialsId: 'YOUR_DOCKER_HUB_CREDENTIALS_ID', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-deploy-token', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     container('kaniko') {
                         sh '''
                             echo "{\\"auths\\":{\\"https://docker.io\\":{\\"auth\\":\\"$(echo -n ${DOCKER_USER}:${DOCKER_PASS} | base64 | tr -d '\\n')\\"}}}" > /kaniko/.docker/config.json
                             
                             /kaniko/executor \
-                              --context=${WORKSPACE} \
-                              --dockerfile=${WORKSPACE}/Dockerfile \
+                              --context=. \
+                              --dockerfile=Dockerfile \
                               --destination=${DOCKER_IMAGE}:${VERSION} \
                               --destination=${DOCKER_IMAGE}:latest
                         '''
