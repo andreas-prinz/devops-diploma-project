@@ -86,6 +86,7 @@ spec:
                 container('docker-cli') {
                     sh '''
                         sleep 5
+                        cd 2-go-app/
                         ls -la                        
                         echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
                         
