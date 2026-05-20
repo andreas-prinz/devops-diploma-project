@@ -7,6 +7,10 @@ pipeline {
             customWorkspace "2-go-app"
         }
     }
+
+    tools {
+        go 'go-1.26.3' 
+    }
     
     environment {
         APP_NAME = "go-app"
