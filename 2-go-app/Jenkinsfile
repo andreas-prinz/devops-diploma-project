@@ -64,7 +64,7 @@ kind: Pod
 spec:
   containers:
   - name: kaniko
-    image: gcr.io/kaniko-project/executor:v1.22.2-debug
+    image: gcr.io/kaniko-project/executor:v1.20.0-debug
     tty: true
     env:
     - name: PATH
