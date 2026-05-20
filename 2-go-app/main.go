@@ -24,12 +24,14 @@ type AppInfo struct {
 // Поточна версія додатку (змінюй це значення при нових релізах)
 const AppVersion = "v1.0.0"
 
+func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"status":"ok"}`))
+
 func main() {
 	// Ендпоінт для перевірки стану (Liveness/Readiness probes в K8s)
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status": "UP"}`))
-	})
+	http.HandleFunc("/health", HealthCheckHandler)
 
 	// Головний ендпоінт, який віддає інформацію
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
