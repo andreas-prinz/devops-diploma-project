@@ -1,4 +1,4 @@
-# Jenkinsfile Groovy
+// Jenkinsfile Groovy
 pipeline {
     agent {
         node {
