@@ -2,7 +2,7 @@
 pipeline {
     agent {
         node {
-            label 'any'
+            label 'built-in'
             // Вказуємо Jenkins автоматично працювати всередині цієї папки
             customWorkspace "2-go-app"
         }
