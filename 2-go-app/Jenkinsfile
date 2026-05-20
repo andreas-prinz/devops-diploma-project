@@ -139,11 +139,11 @@ spec:
                     container('kubectl') {
                         withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}"]) {
                             sh '''
-                                kubectl apply -f rollout.yaml -f service.yaml
+                                kubectl apply -f app-deployment.yaml
                                 
-                                kubectl set image rollout go-app-rollout go-app-container=${DOCKER_IMAGE}:${VERSION}
+                                kubectl set image deployment/go-app go-app-container=${DOCKER_IMAGE}:${VERSION}
                                 
-                                kubectl rollout status rollout go-app-rollout --timeout=60s
+                                kubectl rollout status deployment/go-app --timeout=60s
                             '''
                         }
                     }
