@@ -1,17 +1,34 @@
 # Jenkinsfile Groovy
 pipeline {
-    agent any
+    agent {
+        node {
+            label 'any'
+            // Вказуємо Jenkins автоматично працювати всередині цієї папки
+            customWorkspace "${WORKSPACE}/2-go-app"
+        }
+    }
     
     environment {
+        APP_NAME = "go-app"
+        DOCKER_USER = "andreasprinz"
+        DOCKER_PASS = "dockerhub-deploy-token"
+	DOCKER_IMAGE = "${DOCKER_USER} + "/" + ${APP_NAME}"
         // Приклад адреси Nexus у кластері:
-        DOCKER_IMAGE = "nexus-nexus-repository-manager.nexus.svc.cluster.local:8082/go-app"
+//        DOCKER_IMAGE = "nexus-nexus-repository-manager.nexus.svc.cluster.local:8082/go-app"
         VERSION = "v${env.BUILD_NUMBER}"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Clean Workspace') {
             steps {
-                checkout scm
+                cleanWs()
+            }
+        }
+
+        stage('Checkout from SCM') {
+            steps {
+                git branch: 'master', credentialsId: 'github-deploy-token', url: 'https://github.com/andreas-prinz/devops-diploma-project'
+//                checkout scm
             }
         }
 
@@ -25,8 +42,20 @@ pipeline {
 
         stage('Build & Push Docker Image') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE}:${VERSION} ."
-                sh "docker push ${DOCKER_IMAGE}:${VERSION}"
+//                sh "docker build -t ${DOCKER_IMAGE}:${VERSION} ."
+//                sh "docker push ${DOCKER_IMAGE}:${VERSION}"
+                docker.withRegistry('',DOCKER_PASS) {
+                    docker_image = docker.build "${DOCKER_IMAGE}"
+                    docker_image.push("${VERSION}")
+                    docker_image.push("latest")
+                }
+            }
+        }
+
+        stage('Cleanup Artifacts') {
+            steps {
+                sh "docker rmi ${DOCKER_IMAGE}:${VERSION}"
+                sh "docker rmi ${DOCKER_IMAGE}:latest"
             }
         }
 
@@ -35,14 +64,14 @@ pipeline {
                 // Jenkins заходить у репозиторій з маніфестами і змінює тег образу
                 // Це тригерить ArgoCD на розгортання
                 sh """
-                   rm -rf manifests-repo
+#                   rm -rf manifests-repo
                    # Копіюємо з внутрішнього GitLab
-                   git clone http://gitlab-webservice.gitlab.svc.cluster.local/root/go-app-manifests.git manifests-repo
-                   cd manifests-repo
-                   sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|' k8s-manifests/rollout.yaml
-                   git add k8s-manifests/rollout.yaml
-                   git commit -m "Update image to ${VERSION}"
-                   git push origin main
+#                   git clone http://gitlab-webservice.gitlab.svc.cluster.local/root/go-app-manifests.git manifests-repo
+#                   cd manifests-repo
+#                   sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|' k8s-manifests/rollout.yaml
+#                   git add k8s-manifests/rollout.yaml
+#                   git commit -m "Update image to ${VERSION}"
+#                   git push origin main
                 """
             }
         }

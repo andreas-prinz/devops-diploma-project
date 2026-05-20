@@ -38,6 +38,29 @@ resource "helm_release" "jenkins" {
     {
       name  = "controller.enableRawHtmlSidebar"
       value = "false"
-    }
+    }    {
+      name  = "controller.installPlugins"
+      value = "docker-commons:latest"
+    },
+    {
+      name  = "controller.installPlugins"
+      value = "docker-workflow:latest"
+    },
+    {
+      name  = "controller.installPlugins"
+      value = "docker-api:latest"
+    },
+    {
+      name  = "controller.installPlugins"
+      value = "docker-plugin:latest"
+    },
+    {
+      name  = "controller.installPlugins"
+      value = "docker-build-step:latest"
+    },
+    {
+      name  = "controller.installPlugins"
+      value = "docker-build-publish:latest"
+    },
   ]
 }
