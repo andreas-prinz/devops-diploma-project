@@ -39,7 +39,7 @@ pipeline {
         stage('Test') {
             steps {
 //                withEnv(['CGO_ENABLED=1']) {
-                    sh 'cd /var/jenkins_home/workspace/go-app-prod-ci/2-go-app/'
+                dir('2-go-app') {
                     sh 'pwd'
                     sh 'ls -la'
                     sh '''
@@ -52,6 +52,7 @@ pipeline {
                     // -race перевіряє код на проблеми з конкурентністю (race conditions)
                     sh 'go test -v ./...'
 //                }
+                }
             }
         }
 
