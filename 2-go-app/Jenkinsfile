@@ -4,7 +4,7 @@ pipeline {
         node {
             label 'any'
             // Вказуємо Jenkins автоматично працювати всередині цієї папки
-            customWorkspace "${WORKSPACE}/2-go-app"
+            customWorkspace "2-go-app"
         }
     }
     
