@@ -58,7 +58,6 @@ pipeline {
             agent {
                 kubernetes {
                     customWorkspace "2-go-app"
-                    envVars: [envVar(key: 'PATH', value: '/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/kaniko')]
                     yaml '''
 apiVersion: v1
 kind: Pod
@@ -67,6 +66,9 @@ spec:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.22.2-debug
     tty: true
+    env:
+    - name: PATH
+      value: /usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/kaniko
     volumeMounts:
     - name: registry-credentials
       mountPath: /kaniko/.docker
