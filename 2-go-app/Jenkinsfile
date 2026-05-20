@@ -65,10 +65,9 @@ spec:
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.20.0-debug
-    command: ["cat"]
-    env:
-    - name: PATH
-      value: /usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/kaniko
+    command: ["sleep"]
+    args: ["99d"]
+    tty: true
     volumeMounts:
     - name: registry-credentials
       mountPath: /kaniko/.docker
