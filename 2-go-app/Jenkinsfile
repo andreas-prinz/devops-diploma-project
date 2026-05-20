@@ -19,7 +19,7 @@ pipeline {
 	DOCKER_IMAGE = "${DOCKER_USER}" + "/" + "${APP_NAME}"
         // Приклад адреси Nexus у кластері:
 //        DOCKER_IMAGE = "nexus-nexus-repository-manager.nexus.svc.cluster.local:8082/go-app"
-        VERSION = "v${RELEASE}-b${BUILD_NUMBER}"
+        VERSION = "v1.0.0-b${BUILD_NUMBER}"
     }
 
     stages {
