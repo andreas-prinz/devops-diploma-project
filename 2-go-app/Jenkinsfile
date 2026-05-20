@@ -58,15 +58,15 @@ pipeline {
             agent {
                 kubernetes {
                     customWorkspace "2-go-app"
+                    envVars: [envVar(key: 'PATH', value: '/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/kaniko')]
                     yaml '''
 apiVersion: v1
 kind: Pod
 spec:
   containers:
   - name: kaniko
-    image: gcr.io/kaniko-project/executor:v1.20.0-debug
-    command: ["sleep"]
-    args: ["99d"]
+    image: gcr.io/kaniko-project/executor:v1.22.2-debug
+    tty: true
     volumeMounts:
     - name: registry-credentials
       mountPath: /kaniko/.docker
@@ -80,7 +80,7 @@ spec:
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-deploy-token', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     container('kaniko') {
                         sh '''
-                            echo "{\\"auths\\":{\\"https://docker.io\\":{\\"auth\\":\\"$(echo -n ${DOCKER_USER}:${DOCKER_PASS} | base64 | tr -d '\\n')\\"}}}" > /kaniko/.docker/config.json
+                            echo "{\\"auths\\":{\\"https://index.docker.io/v1/\\":{\\"auth\\":\\"$(echo -n ${DOCKER_USER}:${DOCKER_PASS} | base64 | tr -d '\\n')\\"}}}" > /kaniko/.docker/config.json
                             
                             /kaniko/executor \
                               --context=. \
