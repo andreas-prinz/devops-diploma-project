@@ -57,6 +57,7 @@ pipeline {
         stage('Build & Push Docker Image') {
             agent {
                 kubernetes {
+                    customWorkspace "2-go-app"
                     yaml '''
 apiVersion: v1
 kind: Pod
