@@ -96,7 +96,7 @@ spec:
                         ls -la                        
                         echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
                         
-                        docker build -t ${DOCKER_IMAGE} .
+                        docker build -t ${DOCKER_IMAGE}:${VERSION} -t ${DOCKER_IMAGE}:latest .
                         
                         docker push ${DOCKER_IMAGE}:${VERSION}
                         docker push ${DOCKER_IMAGE}:latest
