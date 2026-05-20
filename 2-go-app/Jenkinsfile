@@ -55,25 +55,61 @@ pipeline {
         }
 
         stage('Build & Push Docker Image') {
+            agent {
+                kubernetes {
+                    yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:v1.20.0-debug
+    command: ["sleep"]
+    args: ["99d"]
+    volumeMounts:
+    - name: registry-credentials
+      mountPath: /kaniko/.docker
+  volumes:
+  - name: registry-credentials
+    emptyDir: {}
+'''
+                }
+            }
             steps {
-                script {
-//                    sh "docker build -t ${DOCKER_IMAGE}:${VERSION} ."
-//                    sh "docker push ${DOCKER_IMAGE}:${VERSION}"
-                    docker.withRegistry('',DOCKER_PASS) {
-                        docker_image = docker.build "${DOCKER_IMAGE}"
-                        docker_image.push("${VERSION}")
-                        docker_image.push("latest")
+                withCredentials([usernamePassword(credentialsId: 'YOUR_DOCKER_HUB_CREDENTIALS_ID', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    container('kaniko') {
+                        sh '''
+                            echo "{\\"auths\\":{\\"https://docker.io\\":{\\"auth\\":\\"$(echo -n ${DOCKER_USER}:${DOCKER_PASS} | base64 | tr -d '\\n')\\"}}}" > /kaniko/.docker/config.json
+                            
+                            /kaniko/executor \
+                              --context=${WORKSPACE} \
+                              --dockerfile=${WORKSPACE}/Dockerfile \
+                              --destination=${DOCKER_IMAGE}:${VERSION} \
+                              --destination=${DOCKER_IMAGE}:latest
+                        '''
                     }
                 }
             }
         }
+            
+//                script {
+//                    sh "docker build -t ${DOCKER_IMAGE}:${VERSION} ."
+//                    sh "docker push ${DOCKER_IMAGE}:${VERSION}"
+//                    docker.withRegistry('',DOCKER_PASS) {
+//                        docker_image = docker.build "${DOCKER_IMAGE}"
+//                        docker_image.push("${VERSION}")
+//                        docker_image.push("latest")
+//                    }
+//                }
+//            }
+//        }
 
-        stage('Cleanup Artifacts') {
-            steps {
-                sh "docker rmi ${DOCKER_IMAGE}:${VERSION}"
-                sh "docker rmi ${DOCKER_IMAGE}:latest"
-            }
-        }
+//        stage('Cleanup Artifacts') {
+//            steps {
+//                sh "docker rmi ${DOCKER_IMAGE}:${VERSION}"
+//                sh "docker rmi ${DOCKER_IMAGE}:latest"
+//            }
+//        }
 
         stage('Update Manifests (GitOps)') {
             steps {
