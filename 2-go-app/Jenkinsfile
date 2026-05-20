@@ -57,8 +57,6 @@ pipeline {
         stage('Build & Push Docker Image') {
             agent {
                 kubernetes {
-                    jenkinsUrl 'http://jenkins.jenkins.svc.cluster.local'
-                    tunnel 'jenkins-agent.jenkins.svc.cluster.local:50000'
                     yaml '''
 apiVersion: v1
 kind: Pod
