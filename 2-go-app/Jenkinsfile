@@ -124,15 +124,18 @@ spec:
         stage('Deploy to K8s') {
             agent {
                 kubernetes {
-                    workspaceVolume emptyDirWorkspaceVolume()
-                    containerTemplate(
-                        name: 'kubectl', 
-                        image: 'alpine/kubectl:1.36.1',
-                        ttyEnabled: true,
-                        command: 'cat'
-                    )
-                }
-            }
+                    yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  workspaceVolume:
+    emptyDir: {}
+  containers:
+  - name: kubectl
+    image: alpine/kubectl:1.36.1
+    command: ["cat"]
+    tty: true
+'''
             steps {
                 dir('3-k8s-manifests') {
                     container('kubectl') {
