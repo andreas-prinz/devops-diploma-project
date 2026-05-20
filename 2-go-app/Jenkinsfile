@@ -130,7 +130,8 @@ spec:
                     containerTemplate(
                         name: 'kubectl', 
                         image: 'alpine/kubectl:1.36.1',
-                        ttyEnabled: true
+                        ttyEnabled: true,
+                        command: 'cat'
                     )
                 }
             }
@@ -139,6 +140,7 @@ spec:
                     container('kubectl') {
                         withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}"]) {
                             sh '''
+                                set -x
                                 kubectl apply -f app-deployment.yaml
                                 
                                 kubectl set image deployment/go-app go-app-container=${DOCKER_IMAGE}:${VERSION}
