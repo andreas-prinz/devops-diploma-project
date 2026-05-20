@@ -89,6 +89,10 @@ spec:
                     sh '''
                         sleep 5
                         cd 2-go-app/
+                        if [ ! -f go.mod ]; then
+                            go mod init my-diploma-app
+                            go mod tidy
+                        fi
                         ls -la                        
                         echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
                         
