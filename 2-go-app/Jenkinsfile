@@ -134,7 +134,8 @@ spec:
   containers:
   - name: kubectl
     image: registry.k8s.io/kubectl:v1.28.2
-    command: ["cat"]
+    command: ["sleep"]
+    args: ["99d"]
     tty: true
 '''
                 }
