@@ -38,14 +38,18 @@ pipeline {
 
         stage('Test') {
             steps {
-                dir('2-go-app') {
-                    withEnv(['CGO_ENABLED=1']) {
-                        sh 'pwd'
-                        sh 'ls -la'
-                        // -v дає детальний лог кожного тесту
-                        // -race перевіряє код на проблеми з конкурентністю (race conditions)
-                        sh 'go test -v -race ./...'
-                    }
+                withEnv(['CGO_ENABLED=1']) {
+                    sh 'pwd'
+                    sh 'ls -la'
+                    sh '''
+                        if [ ! -f go.mod ]; then
+                            go mod init my-diploma-app
+                            go mod tidy
+                        fi
+                    '''
+                    // -v дає детальний лог кожного тесту
+                    // -race перевіряє код на проблеми з конкурентністю (race conditions)
+                    sh 'go test -v -race ./...'
                 }
             }
         }
