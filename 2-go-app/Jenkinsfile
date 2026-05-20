@@ -38,9 +38,11 @@ pipeline {
 
         stage('Test') {
             steps {
-                // -v дає детальний лог кожного тесту
-                // -race перевіряє код на проблеми з конкурентністю (race conditions)
-                sh 'go test -v -race ./...'
+                withEnv(['CGO_ENABLED=1']) {
+                    // -v дає детальний лог кожного тесту
+                    // -race перевіряє код на проблеми з конкурентністю (race conditions)
+                    sh 'go test -v -race ./...'
+                }
             }
         }
 
