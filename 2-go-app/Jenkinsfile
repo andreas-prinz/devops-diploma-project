@@ -3,8 +3,6 @@ pipeline {
     agent {
         node {
             label 'built-in'
-            // Вказуємо Jenkins автоматично працювати всередині цієї папки
-//            customWorkspace "2-go-app"
         }
     }
 
@@ -59,7 +57,6 @@ pipeline {
         stage('Build & Push Docker Image') {
             agent {
                 kubernetes {
-//                    customWorkspace "2-go-app"
                     yaml '''
 apiVersion: v1
 kind: Pod
@@ -127,6 +124,7 @@ spec:
         stage('Deploy to K8s') {
             agent {
                 kubernetes {
+                    workspaceVolume emptyDirWorkspaceVolume()
                     containerTemplate(
                         name: 'kubectl', 
                         image: 'alpine/kubectl:1.36.1',
