@@ -1,8 +1,8 @@
-# service.yaml
+# service-canary.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: go-app-service
+  name: go-app-canary
   namespace: diploma-prod
 spec:
   selector:
@@ -11,6 +11,6 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 8080
-    nodePort: 32001
+    nodePort: 32002
     protocol: TCP
 #  type: LoadBalancer # Для GCP, щоб отримати зовнішній IP для доступу
