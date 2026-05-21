@@ -11,4 +11,6 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 8080
+    nodePort: 32000
+    protocol: TCP
 #  type: LoadBalancer # Для GCP, щоб отримати зовнішній IP для доступу

@@ -121,41 +121,5 @@ spec:
                 """
             }
         }
-        
-        stage('Deploy to K8s') {
-            agent {
-                kubernetes {
-                    containerTemplate(
-                        name: 'kubectl', 
-                        image: 'alpine/kubectl:1.36.1',
-                        ttyEnabled: true,
-                        command: 'cat'
-                    )
-                    serviceAccount 'jenkins' 
-                }
-            }
-            
-            steps {
-//                dir('3-k8s-manifests') {
-                    container('kubectl') {
-                        withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}"]) {
-                            sh '''
-                                set -x
-                                apk add --no-cache git
-                                git clone https://github.com/andreas-prinz/devops-diploma-project.git
-                                cd devops-diploma-project/3-k8s-manifests
-                                pwd
-                                ls -la
-                                kubectl apply -f rollout.yaml
-                                
-                                kubectl set image rollout/go-app go-app-container=${DOCKER_IMAGE}:${VERSION}
-                                
-                                kubectl rollout status rollout/go-app --timeout=60s
-                            '''
-                        }
-                    }
-//                }
-            }
-        }
     }
 }
