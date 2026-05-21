@@ -47,43 +47,19 @@ func TestRootHandler_Success(t *testing.T) {
 	os.Setenv("APP_ENV", "Staging")
 	defer os.Unsetenv("APP_ENV") // Очищаємо після тесту
 
-	// Створюємо вбудований роутер, аналогічний тому, що функції main()
-	mux := http.NewServeMux()
-	
-	// Копіюємо анонімний обробник з main.go для тестування
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		podName, err := os.Hostname()
-		if err != nil {
-			podName = "Unknown"
-		}
-
-		envName := os.Getenv("APP_ENV")
-		if envName == "" {
-			envName = "Production"
-		}
-
-		info := AppInfo{
-			Message:     WelcomeMessage,
-			Version:     AppVersion,
-			Environment: envName,
-			PodName:     podName,
-			Timestamp:   time.Now(), // Опціонально для фіксації времени
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(info)
-	})
-
-	// Запускаємо реальний тестовий сервер у пам'яті
-	ts := httptest.NewServer(mux)
-	defer ts.Close()
-
 	// Робимо запит до кореня тестового сервера
-	res, err := http.Get(ts.URL + "/")
+	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer res.Body.Close()
+
+	// Створює віртуальний приймач відповіді
+	rr := httptest.NewRecorder()
+	
+	// Бере вашу справжню функцію з main.go
+	handler := http.HandlerFunc(RootHandler)
+	// Безпосередньо передає до неї фейковий HTTP-запит
+	handler.ServeHTTP(rr, req)
 
 	// Перевіряємо статус-код (має бути 200)
 	if res.StatusCode != http.StatusOK {
