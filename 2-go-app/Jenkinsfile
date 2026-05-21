@@ -114,10 +114,10 @@ spec:
                 sh """
 #                   rm -rf 3-k8s-manifests
                    # Копіюємо з внутрішнього GitLab
-                   git clone https://github.com/andreas-prinz/devops-diploma-project
+#                   git clone https://github.com/andreas-prinz/devops-diploma-project
                    pwd
                    ls -la
-                   cd 3-k8s-manifests
+#                   cd 3-k8s-manifests
                    sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|' 3-k8s-manifests/rollout.yaml
                    git diff 3-k8s-manifests/rollout.yaml
                    git add 3-k8s-manifests/rollout.yaml
