@@ -105,6 +105,6 @@ func TestRootHandler_Success(t *testing.T) {
 		t.Errorf("Очікувалася версія %s, отримали %s", AppVersion, info.Version)
 	}
 	if info.Message != WelcomeMessage {
-		t.Error("Очікувалося повідомлення '%s', отримали '%s'", WelcomeMessage, info.Message)
+		t.Error("Очікувалося повідомлення %s, отримали %s", WelcomeMessage, info.Message)
 	}
 }
