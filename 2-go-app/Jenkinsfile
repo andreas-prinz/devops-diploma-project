@@ -36,7 +36,7 @@ pipeline {
 
         stage('Checkout from SCM') {
             steps {
-                git branch: '${REPO_BRANCH}', credentialsId: '${REPO_TOKEN}', url: '${REPO_URL}'
+                git branch: "${REPO_BRANCH}", credentialsId: "${REPO_TOKEN}", url: "${REPO_URL}"
             }
         }
 
@@ -114,7 +114,7 @@ spec:
             steps {
                 // Jenkins заходить у репозиторій з маніфестами і змінює тег образу
                 // Це тригерить ArgoCD на розгортання
-                withCredentials([usernamePassword(credentialsId: '${REPO_TOKEN}', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                withCredentials([usernamePassword(credentialsId: "${REPO_TOKEN}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}", "REPO_URL=${REPO_URL}", "REPO_BRANCH=${REPO_BRANCH}"]) {
                         sh '''
                            git config --global user.email "jenkins@ci-cd.local"
