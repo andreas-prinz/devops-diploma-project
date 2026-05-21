@@ -52,13 +52,13 @@ inputs = {
   # Додаємо правило фаєрволу для SSH
   firewall_rules = [
     {
-      name      = "allow-ssh-from-home"
+      name      = "allow-nodeport-ingress"
       direction = "INGRESS"
       priority  = 1000
       ranges    = ["0.0.0.0/0"] # В ідеалі впиши сюди свій IP (напр. "1.2.3.4/32")
       allow = [{
         protocol = "tcp"
-        ports    = ["32006"]
+        ports    = ["32001-32006"]
       }]
     }
   ]
