@@ -113,6 +113,8 @@ spec:
                 // Це тригерить ArgoCD на розгортання
                 sh """
 #                   rm -rf 3-k8s-manifests
+                    git config --global user.email "jenkins@ci-cd.local"
+                    git config --global user.name "Jenkins CI"
                    # Копіюємо з внутрішнього GitLab
 #                   git clone https://github.com/andreas-prinz/devops-diploma-project
                    pwd
@@ -121,7 +123,7 @@ spec:
                    sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|' 3-k8s-manifests/rollout.yaml
                    git diff 3-k8s-manifests/rollout.yaml
                    git add 3-k8s-manifests/rollout.yaml
-                   git commit -m "Update image to ${VERSION}"
+                   git commit -m "Update image to ${VERSION} [skip ci]"
                    git push origin master
                 """
             }
