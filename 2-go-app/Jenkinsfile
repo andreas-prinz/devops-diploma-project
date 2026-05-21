@@ -26,8 +26,9 @@ pipeline {
         REPO_URL = "github.com/andreas-prinz/devops-diploma-project"
         REPO_BRANCH = "master"
         REPO_TOKEN = "github-deploy-token"
-                
-        SONAR_SCANNER_HOME = tool 'sonar-scanner'
+        
+        SONAR_SERVER = 'sonar-server'
+        SONAR_SCANNER_HOME = 'sonar-scanner'
         SONAR_TOKEN = 'jenkins-sonarqube-token'
     }
 
@@ -66,7 +67,7 @@ pipeline {
         
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv(credentialsId: "${SONAR_TOKEN}") {
+                withSonarQubeEnv(installationName: "${SONAR_SERVER}") {
                     sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner"
                 }
             }
