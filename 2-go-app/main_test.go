@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 	"os"
-	"time"
 )
 
 // 1. Тестуємо наш ендпоінт /health
@@ -62,13 +61,13 @@ func TestRootHandler_Success(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	// Перевіряємо статус-код (має бути 200)
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("Очікувався статус 200, отримали %d", res.StatusCode)
+	if rr.StatusCode != http.StatusOK {
+		t.Errorf("Очікувався статус 200, отримали %d", rr.StatusCode)
 	}
 
 	// Декодуємо JSON-відповідь у структуру AppInfo, щоб перевірити поля
 	var info AppInfo
-	err = json.NewDecoder(res.Body).Decode(&info)
+	err = json.NewDecoder(rr.Body).Decode(&info)
 	if err != nil {
 		t.Fatal("Не вдалося розпарити JSON-відповідь:", err)
 	}
