@@ -146,6 +146,8 @@ spec:
                                 set -x
                                 pwd
                                 ls -la
+                                git clone https://github.com/andreas-prinz/devops-diploma-project.git
+                                cd devops-diploma-project/3-k8s-manifests
                                 kubectl apply -f app-deployment.yaml
                                 
                                 kubectl set image deployment/go-app go-app-container=${DOCKER_IMAGE}:${VERSION}
