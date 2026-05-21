@@ -44,7 +44,7 @@ resource "helm_release" "sonarqube" {
     {
       name  = "community.enabled"
       value = "true"
-    }
+    },
   ]
 }
 
