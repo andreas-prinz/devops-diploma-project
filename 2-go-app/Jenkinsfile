@@ -123,7 +123,7 @@ spec:
                            pwd
                            ls -la
                            
-                           sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|' 3-k8s-manifests/rollout.yaml
+                           sed -i "s|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|" 3-k8s-manifests/rollout.yaml
                            git diff 3-k8s-manifests/rollout.yaml
                            git add 3-k8s-manifests/rollout.yaml
                            git commit -m "Update image to ${VERSION} [skip ci]"
