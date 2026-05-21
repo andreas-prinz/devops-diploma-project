@@ -1,4 +1,4 @@
-# 1-infrastructure/prod/jenkins/terragrunt.hcl
+# 1-infrastructure/prod/sonar-qube/terragrunt.hcl
 
 locals {
   root_config = read_terragrunt_config(find_in_parent_folders("root.hcl"))
@@ -6,6 +6,7 @@ locals {
   project_id  = local.root_config.locals.project_id
   region      = local.root_config.locals.region
   zone        = local.root_config.locals.zone
+  passcode    = local.root_config.locals.passcode
 }
 
 include "root" {
@@ -19,7 +20,7 @@ dependency "gke" {
 
 # Використовуємо кастомний Terraform код для Helm релізів
 terraform {
-  source = "../../modules/jenkins"
+  source = "../../modules/sonar-qube"
 }
 
 inputs = {
@@ -27,4 +28,5 @@ inputs = {
   project_id   = local.project_id
   cluster_name = dependency.gke.outputs.name
   location     = local.zone
+  passcode     = local.passcode
 }

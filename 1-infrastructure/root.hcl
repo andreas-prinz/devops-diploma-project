@@ -6,6 +6,7 @@ locals {
   region      = get_env("TF_VAR_gcp_region", "europe-west1")
   zone_suffix = get_env("ZONE_SUFFIX", "b")
   zone        = "${local.region}-${local.zone_suffix}"
+  passcode    = get_env("TF_VAR_monitoring_passcode", "MySuperSecretPasscode999!")
 }
 
 # 2. Налаштування віддаленого зберігання стану (Remote State) в Google Cloud Storage (GCS)
@@ -44,6 +45,7 @@ generate "shared_providers" {
 variable "cluster_name" { type = string }
 variable "project_id"   { type = string }
 variable "location"     { type = string }
+variable "passcode"     { type = string }
 
 # Налаштування підключення до GKE
 data "google_client_config" "default" {}

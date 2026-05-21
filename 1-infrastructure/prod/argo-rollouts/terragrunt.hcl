@@ -1,4 +1,4 @@
-# 1-infrastructure/prod/tools/terragrunt.hcl
+# 1-infrastructure/prod/argo-rollouts/terragrunt.hcl
 
 locals {
   root_config = read_terragrunt_config(find_in_parent_folders("root.hcl"))
