@@ -10,7 +10,7 @@ spec:
     # Використовуємо внутрішній DNS кластера або наш домен
     repoURL: 'https://github.com/andreas-prinz/devops-diploma-project.git'
     targetRevision: HEAD
-    path: k8s-manifests # папка, де лежить твій rollout.yaml
+    path: 3-k8s-manifests # папка, де лежить твій rollout.yaml
   destination:
     server: 'https://34.32.110.187'
     namespace: diploma-prod
