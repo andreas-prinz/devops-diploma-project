@@ -1,4 +1,4 @@
-# k8s-manifests/argocd-app.yaml
+# 3-k8s-manifests/argocd-app.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
