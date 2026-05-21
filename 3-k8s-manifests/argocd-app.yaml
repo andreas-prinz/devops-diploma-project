@@ -8,11 +8,11 @@ spec:
   project: default
   source:
     # Використовуємо внутрішній DNS кластера або наш домен
-    repoURL: 'http://gitlab-webservice.gitlab.svc.cluster.local/root/go-app-manifests.git'
+    repoURL: 'https://github.com/andreas-prinz/devops-diploma-project.git'
     targetRevision: HEAD
     path: k8s-manifests # папка, де лежить твій rollout.yaml
   destination:
-    server: 'https://kubernetes.default.svc'
+    server: 'https://34.32.110.187'
     namespace: diploma-prod
   syncPolicy:
     automated:
