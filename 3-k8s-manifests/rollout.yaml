@@ -5,7 +5,7 @@ metadata:
   name: go-app-rollout
   namespace: diploma-prod
 spec:
-  replicas: 5 # Ставимо 5 реплік, щоб відсотки трафіку ділилися рівно (20% = 1 пода)
+  replicas: 4 # Ставимо 4 реплік, щоб відсотки трафіку ділилися рівно (25% = 1 пода)
   selector:
     matchLabels:
       app: go-app
@@ -37,7 +37,7 @@ spec:
       stableService: go-app-stable
       canaryService: go-app-canary
       steps:
-      - setWeight: 20      # Крок 1: Пустити 20% трафіку на нову версію (V2)
+      - setWeight: 25      # Крок 1: Пустити 20% трафіку на нову версію (V2)
       - pause: 
           duration: 5m     # Крок 2: Автоматична пауза на 5 хвилин для збору метрик
       - setWeight: 50      # Крок 3: Збільшити трафік до 50%
