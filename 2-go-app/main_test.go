@@ -61,8 +61,8 @@ func TestRootHandler_Success(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	// Перевіряємо статус-код (має бути 200)
-	if rr.StatusCode != http.StatusOK {
-		t.Errorf("Очікувався статус 200, отримали %d", rr.StatusCode)
+	if rr.Code != http.StatusOK {
+		t.Errorf("Очікувався статус 200, отримали %d", rr.Code)
 	}
 
 	// Декодуємо JSON-відповідь у структуру AppInfo, щоб перевірити поля
