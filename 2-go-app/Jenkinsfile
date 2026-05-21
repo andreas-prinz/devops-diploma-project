@@ -112,10 +112,10 @@ spec:
                 // Jenkins заходить у репозиторій з маніфестами і змінює тег образу
                 // Це тригерить ArgoCD на розгортання
                 sh """
-                   rm -rf manifests-repo
+                   rm -rf 3-k8s-manifests
                    # Копіюємо з внутрішнього GitLab
                    git clone https://github.com/andreas-prinz/devops-diploma-project
-                   cd manifests-repo
+                   cd 3-k8s-manifests
                    sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|' 3-k8s-manifests/rollout.yaml
                    git diff 3-k8s-manifests/rollout.yaml
                    git add 3-k8s-manifests/rollout.yaml
