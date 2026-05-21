@@ -62,5 +62,31 @@ resource "helm_release" "jenkins" {
       name  = "controller.installPlugins"
       value = "docker-build-publish:latest"
     },
+    {
+      name  = "controller.installPlugins"
+      value = "ws-cleanup:latest"
+    },
+    {
+      name  = "controller.installPlugins"
+      value = "golang:latest"
+    },
+    {
+      name  = "agent.enabled"
+      value = "true"
+    },
+    {
+      name  = "controller.JCasC.configScripts.go-tools"
+      value = <<EOF
+tool:
+  go:
+    installations:
+      - name: "go-1.26.3"
+        properties:
+          - installSource:
+              installers:
+                - golang:
+                    version: "1.26.3"
+EOF
+    }
   ]
 }

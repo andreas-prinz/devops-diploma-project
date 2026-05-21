@@ -15,8 +15,8 @@ spec:
         app: go-app
     spec:
       containers:
-      - name: go-app
-        image: go-app-container # Цей тег буде оновлювати Jenkins
+      - name: go-app-container
+        image: andreasprinz/go-app:latest # Цей тег буде оновлювати Jenkins
         ports:
         - containerPort: 8080
         livenessProbe:

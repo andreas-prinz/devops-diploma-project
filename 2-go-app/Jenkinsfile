@@ -146,11 +146,11 @@ spec:
                                 cd devops-diploma-project/3-k8s-manifests
                                 pwd
                                 ls -la
-                                kubectl apply -f app-deployment.yaml
+                                kubectl apply -f rollout.yaml
                                 
-                                kubectl set image deployment/go-app go-app-container=${DOCKER_IMAGE}:${VERSION}
+                                kubectl set image rollout/go-app go-app-container=${DOCKER_IMAGE}:${VERSION}
                                 
-                                kubectl rollout status deployment/go-app --timeout=60s
+                                kubectl rollout status rollout/go-app --timeout=60s
                             '''
                         }
                     }
