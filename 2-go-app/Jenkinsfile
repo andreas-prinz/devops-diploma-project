@@ -129,8 +129,6 @@ spec:
 apiVersion: v1
 kind: Pod
 spec:
-  workspaceVolume:
-    emptyDir: {}
   containers:
   - name: kubectl
     image: alpine/kubectl:1.36.1
