@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 	"os"
+	"time"
 )
 
 // 1. Тестуємо наш ендпоінт /health
@@ -66,7 +67,7 @@ func TestRootHandler_Success(t *testing.T) {
 			Version:     AppVersion,
 			Environment: envName,
 			PodName:     podName,
-			Timestamp:   timeNow(), // Опціонально для фіксації времени
+			Timestamp:   time.Now(), // Опціонально для фіксації времени
 		}
 
 		w.Header().Set("Content-Type", "application/json")
