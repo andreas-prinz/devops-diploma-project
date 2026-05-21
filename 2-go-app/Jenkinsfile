@@ -68,6 +68,7 @@ pipeline {
             steps {
                 withSonarQubeEnv(сredentialsId: "${SONAR_TOKEN}") {
                     sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner"
+                }
             }
         }
 
