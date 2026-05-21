@@ -115,6 +115,7 @@ spec:
 #                   rm -rf 3-k8s-manifests
                     git config --global user.email "jenkins@ci-cd.local"
                     git config --global user.name "Jenkins CI"
+                    git remote add origin https://andreas-prinz@github.com/andreas-prinz/devops-diploma-project.git
                    # Копіюємо з внутрішнього GitLab
 #                   git clone https://github.com/andreas-prinz/devops-diploma-project
                    pwd
