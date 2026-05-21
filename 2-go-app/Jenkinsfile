@@ -22,9 +22,13 @@ pipeline {
         // Приклад адреси Nexus у кластері:
 //        DOCKER_IMAGE = "nexus-nexus-repository-manager.nexus.svc.cluster.local:8082/go-app"
         VERSION = "v2.0.0-b${BUILD_NUMBER}"
+        
         REPO_URL = "github.com/andreas-prinz/devops-diploma-project"
         REPO_BRANCH = "master"
         REPO_TOKEN = "github-deploy-token"
+                
+        SONAR_SCANNER_HOME = tool 'sonar-scanner'
+        SONAR_TOKEN = 'jenkins-sonarqube-token'
     }
 
     stages {
@@ -54,12 +58,27 @@ pipeline {
                     '''
                     // -v дає детальний лог кожного тесту
                     // -race перевіряє код на проблеми з конкурентністю (race conditions)
-                    sh 'go test -v ./...'
+                    sh 'go test -v -coverprofile=coverage.out ./...'
 //                }
                 }
             }
         }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv(сredentialsId: "${SONAR_TOKEN}") {
+                    sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner"
+            }
+        }
 
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true, сredentialsId: "${SONAR_TOKEN}"
+                }
+            }
+        }
+        
         stage('Build & Push Docker Image') {
             agent {
                 kubernetes {
@@ -88,7 +107,7 @@ spec:
             
             steps {
                 withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}"]) {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-deploy-token', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_PASS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         container('docker-cli') {
                             sh '''
                                 sleep 5
