@@ -22,6 +22,9 @@ pipeline {
         // Приклад адреси Nexus у кластері:
 //        DOCKER_IMAGE = "nexus-nexus-repository-manager.nexus.svc.cluster.local:8082/go-app"
         VERSION = "v2.0.0-b${BUILD_NUMBER}"
+        REPO_URL = "https://github.com/andreas-prinz/devops-diploma-project"
+        REPO_BRANCH = "master"
+        REPO_TOKEN = "github-deploy-token"
     }
 
     stages {
@@ -33,7 +36,7 @@ pipeline {
 
         stage('Checkout from SCM') {
             steps {
-                git branch: 'master', credentialsId: 'github-deploy-token', url: 'https://github.com/andreas-prinz/devops-diploma-project'
+                git branch: '${REPO_BRANCH}', credentialsId: '${REPO_TOKEN}', url: '${REPO_URL}'
             }
         }
 
@@ -111,22 +114,23 @@ spec:
             steps {
                 // Jenkins заходить у репозиторій з маніфестами і змінює тег образу
                 // Це тригерить ArgoCD на розгортання
-                sh """
-#                   rm -rf 3-k8s-manifests
-                    git config --global user.email "jenkins@ci-cd.local"
-                    git config --global user.name "Jenkins CI"
-                    git remote add origin https://andreas-prinz@github.com/andreas-prinz/devops-diploma-project.git
-                   # Копіюємо з внутрішнього GitLab
-#                   git clone https://github.com/andreas-prinz/devops-diploma-project
-                   pwd
-                   ls -la
-#                   cd 3-k8s-manifests
-                   sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|' 3-k8s-manifests/rollout.yaml
-                   git diff 3-k8s-manifests/rollout.yaml
-                   git add 3-k8s-manifests/rollout.yaml
-                   git commit -m "Update image to ${VERSION} [skip ci]"
-                   git push origin master
-                """
+                withCredentials([usernamePassword(credentialsId: '${REPO_TOKEN}', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                    withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}", "REPO_URL=${REPO_URL}", "REPO_BRANCH=${REPO_BRANCH}"]) {
+                        sh '''
+                           git config --global user.email "jenkins@ci-cd.local"
+                           git config --global user.name "Jenkins CI"
+                           
+                           pwd
+                           ls -la
+                           
+                           sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|' 3-k8s-manifests/rollout.yaml
+                           git diff 3-k8s-manifests/rollout.yaml
+                           git add 3-k8s-manifests/rollout.yaml
+                           git commit -m "Update image to ${VERSION} [skip ci]"
+                           git push https://${GIT_USER}:${GIT_TOKEN}@${REPO_URL} ${REPO_BRANCH}
+                        '''
+                    }
+                }
             }
         }
     }
