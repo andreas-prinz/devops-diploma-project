@@ -139,15 +139,16 @@ spec:
             }
             
             steps {
-                dir('3-k8s-manifests') {
+//                dir('3-k8s-manifests') {
                     container('kubectl') {
                         withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}"]) {
                             sh '''
                                 set -x
-                                pwd
-                                ls -la
+                                apk add --no-cache git
                                 git clone https://github.com/andreas-prinz/devops-diploma-project.git
                                 cd devops-diploma-project/3-k8s-manifests
+                                pwd
+                                ls -la
                                 kubectl apply -f app-deployment.yaml
                                 
                                 kubectl set image deployment/go-app go-app-container=${DOCKER_IMAGE}:${VERSION}
@@ -156,7 +157,7 @@ spec:
                             '''
                         }
                     }
-                }
+//                }
             }
         }
     }
