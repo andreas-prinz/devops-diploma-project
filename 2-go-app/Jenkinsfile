@@ -22,7 +22,7 @@ pipeline {
         // Приклад адреси Nexus у кластері:
 //        DOCKER_IMAGE = "nexus-nexus-repository-manager.nexus.svc.cluster.local:8082/go-app"
         VERSION = "v2.0.0-b${BUILD_NUMBER}"
-        REPO_URL = "https://github.com/andreas-prinz/devops-diploma-project"
+        REPO_URL = "github.com/andreas-prinz/devops-diploma-project"
         REPO_BRANCH = "master"
         REPO_TOKEN = "github-deploy-token"
     }
@@ -36,7 +36,7 @@ pipeline {
 
         stage('Checkout from SCM') {
             steps {
-                git branch: "${REPO_BRANCH}", credentialsId: "${REPO_TOKEN}", url: "${REPO_URL}"
+                git branch: "${REPO_BRANCH}", credentialsId: "${REPO_TOKEN}", url: "https://" + "${REPO_URL}"
             }
         }
 
