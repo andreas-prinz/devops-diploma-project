@@ -17,7 +17,7 @@ spec:
         version: "v1" # Важливо для Canary
     spec:
       containers:
-      - name: go-app
+      - name: go-app-container
         image: andreasprinz/go-app:latest
         ports:
         - containerPort: 8080
