@@ -28,7 +28,7 @@ pipeline {
         REPO_TOKEN = "github-deploy-token"
         
         SONAR_SERVER = 'sonarqube-server'
-        SONAR_SCANNER_HOME = 'sonarqube-scanner'
+        SONAR_SCANNER_HOME = tool 'sonarqube-scanner'
         SONAR_TOKEN = 'jenkins-sonarqube-token'
     }
 
@@ -67,7 +67,7 @@ pipeline {
         
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv(installationName: "${SONAR_SERVER}") {
+                withSonarQubeEnv("${SONAR_SERVER}") {
                     sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner"
                 }
             }
