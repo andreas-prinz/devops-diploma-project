@@ -10,6 +10,10 @@ pipeline {
         go 'go-1.26.3' 
     }
     
+//     triggers {
+//        githubPush() 
+//    }
+    
     environment {
         APP_NAME = "go-app"
         DOCKER_USER = "andreasprinz"
@@ -17,7 +21,7 @@ pipeline {
 	DOCKER_IMAGE = "${DOCKER_USER}" + "/" + "${APP_NAME}"
         // Приклад адреси Nexus у кластері:
 //        DOCKER_IMAGE = "nexus-nexus-repository-manager.nexus.svc.cluster.local:8082/go-app"
-        VERSION = "v1.0.0-b${BUILD_NUMBER}"
+        VERSION = "v2.0.0-b${BUILD_NUMBER}"
     }
 
     stages {
@@ -30,7 +34,6 @@ pipeline {
         stage('Checkout from SCM') {
             steps {
                 git branch: 'master', credentialsId: 'github-deploy-token', url: 'https://github.com/andreas-prinz/devops-diploma-project'
-//                checkout scm
             }
         }
 
@@ -97,7 +100,6 @@ spec:
                                 docker build -t ${DOCKER_IMAGE}:${VERSION} -t ${DOCKER_IMAGE}:latest .
                         
                                 docker push ${DOCKER_IMAGE}:${VERSION}
-                                docker push ${DOCKER_IMAGE}:latest
                             '''
                         }
                     }
@@ -110,14 +112,15 @@ spec:
                 // Jenkins заходить у репозиторій з маніфестами і змінює тег образу
                 // Це тригерить ArgoCD на розгортання
                 sh """
-#                   rm -rf manifests-repo
+                   rm -rf manifests-repo
                    # Копіюємо з внутрішнього GitLab
-#                   git clone http://gitlab-webservice.gitlab.svc.cluster.local/root/go-app-manifests.git manifests-repo
-#                   cd manifests-repo
-#                   sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|' k8s-manifests/rollout.yaml
-#                   git add k8s-manifests/rollout.yaml
-#                   git commit -m "Update image to ${VERSION}"
-#                   git push origin main
+                   git clone https://github.com/andreas-prinz/devops-diploma-project
+                   cd manifests-repo
+                   sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|' 3-k8s-manifests/rollout.yaml
+                   git diff 3-k8s-manifests/rollout.yaml
+                   git add 3-k8s-manifests/rollout.yaml
+                   git commit -m "Update image to ${VERSION}"
+                   git push origin master
                 """
             }
         }
