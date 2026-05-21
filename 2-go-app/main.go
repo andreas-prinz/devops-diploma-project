@@ -23,6 +23,7 @@ type AppInfo struct {
 
 // Поточна версія додатку (змінюй це значення при нових релізах)
 const AppVersion = "v2.0.0"
+const WelcomeMessage = "DevOps Diploma Project API, Hello World!"
 
 func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -49,7 +50,7 @@ func main() {
 		}
 
 		info := AppInfo{
-			Message:     "DevOps Diploma Project API, Hello World!",
+			Message:     WelcomeMessage,
 			Version:     AppVersion,
 			Environment: envName,
 			PodName:     podName,
