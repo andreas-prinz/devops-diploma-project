@@ -125,16 +125,13 @@ spec:
         stage('Deploy to K8s') {
             agent {
                 kubernetes {
-                    yaml '''
-apiVersion: v1
-kind: Pod
-spec:
-  containers:
-  - name: kubectl
-    image: alpine/kubectl:1.36.1
-    command: ["cat"]
-    tty: true
-'''
+                    containerTemplate(
+                        name: 'kubectl', 
+                        image: alpine/kubectl:1.36.1,
+                        ttyEnabled: true,
+                        command: 'cat'
+                    )
+                    serviceAccount 'jenkins' 
                 }
             }
             
