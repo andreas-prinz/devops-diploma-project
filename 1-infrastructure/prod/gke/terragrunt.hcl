@@ -41,7 +41,7 @@ inputs = {
   node_pools = [
     {
       name               = "go-app-node-pool"
-      machine_type       = "e2-medium"
+      machine_type       = "e2-standard-2"
       node_locations     = local.zone
       autoscaling        = true
       min_count          = 1
