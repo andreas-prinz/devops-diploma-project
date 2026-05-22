@@ -88,6 +88,11 @@ pipeline {
                 withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}"]) {
                     withCredentials([usernamePassword(credentialsId: "${DOCKER_PASS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh '''
+                            set -x
+                            sudo apt-get update
+                            sudo apt-get install -y docker.io
+                            sudo usermod -aG docker jenkins
+                            sudo systemctl restart jenkins
                             cd 2-go-app/
                             if [ ! -f go.mod ]; then
                                 go mod init my-diploma-app
