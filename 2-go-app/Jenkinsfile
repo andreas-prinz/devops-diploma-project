@@ -69,7 +69,7 @@ pipeline {
             steps {
                 withSonarQubeEnv("${SONAR_SERVER}") {
                     withCredentials([string(credentialsId: "${SONAR_TOKEN}", variable: 'SONAR_TOKEN')]) {
-                        sh "SONAR_TOKEN=${SONAR_TOKEN} ${SONAR_SCANNER_HOME}/bin/sonar-scanner"
+                        sh '${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=my-go-web-app -Dsonar.projectName="My Go Web Application" -Dsonar.sources=. -Dsonar.exclusions="**/*_test.go,**/vendor/**" -Dsonar.tests=. -Dsonar.test.inclusions="**/*_test.go" -Dsonar.go.coverage.reportPaths=coverage.out'
                     }
                 }
             }
