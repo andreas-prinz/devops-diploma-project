@@ -42,37 +42,27 @@ pipeline {
         stage('Guard: Check Skip CI') {
             steps {
                script {
-                    // Отримуємо хеш поточного комміту
+                    // Отримуємо хеш поточного комміту, який спричинив цей запуск
                     def currentCommit = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                     echo "Поточний хеш комміту: ${currentCommit}"
                     
-                    // Отримуємо текст комміту для перевірки на [skip ci]
+                    // Отримуємо текст останнього комміту
                     def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
                     echo "Текст останнього комміту: ${commitMessage}"
                     
-                    // Безпечно отримуємо хеш попередньої успішної збірки через лог Git
-                    // Перевіряємо, чи є взагалі в історії другий комміт (щоб не впасти на першому запуску)
-                    def hasHistory = sh(script: 'git rev-list --count HEAD', returnStdout: true).trim().toInteger()
+                    // Використовуємо легальну змінну Jenkins для отримання хешу минулого успішного білду
+                    def previousCommit = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT
+                    echo "Хеш комміту попередньої успішної збірки: ${previousCommit}"
                     
-                    if (hasHistory > 1) {
-                        // HEAD~1 — це хеш попереднього комміту в репозиторії
-                        def previousCommit = sh(script: 'git rev-parse HEAD~1', returnStdout: true).trim()
-                        echo "Хеш попереднього комміту в Git: ${previousCommit}"
-                        
-                        // ПЕРЕВІРКА 1: Якщо хеші збігаються (хибний запуск Jenkins, коли в Git немає нових коммітів)
-                        // Оскільки Poll SCM іноді запускається сам, ми перевіряємо, чи змінився взагалі репозиторій
-                        if (currentBuild.previousBuild != null && currentBuild.previousBuild.result == 'SUCCESS') {
-                            // Якщо минулий білд був успішним і ми бачимо той самий комміт — це помилковий тригер
-                            if (commitMessage.toLowerCase().contains("skip ci")) {
-                                echo "👉 Виявлено прапор [skip ci]. Пропускаємо наступні етапи."
-                                currentBuild.result = 'SUCCESS'
-                            }
-                        }
+                    // ПЕРЕВІРКА 1: Якщо хеш збігається з минулим успішним (хибний запуск Jenkins при No Changes)
+                    if (previousCommit && currentCommit == previousCommit) {
+                        echo "⚠️ Jenkins викликав збірку помилково (нових коммітів у Git немає). Зупиняємо пайплайн."
+                        currentBuild.result = 'SUCCESS'
                     }
                     
-                    // ПЕРЕВІРКА 2: Якщо це легітимний комміт від кроку автоматизації GitOps
+                    // ПЕРЕВІРКА 2: Якщо комміт новий, але містить стоп-флаг [skip ci] від кроку автоматизації
                     if (commitMessage.toLowerCase().contains("skip ci")) {
-                        echo "Виявлено прапор [skip ci]. Наступні етапи будуть пропущені."
+                        echo "👉 Виявлено прапор [skip ci]. Наступні етапи будуть пропущені для збереження ресурсів."
                         currentBuild.result = 'SUCCESS'
                     }
                 }
