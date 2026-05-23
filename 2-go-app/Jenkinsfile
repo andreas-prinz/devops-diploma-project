@@ -40,16 +40,18 @@ pipeline {
     stages {
         // ЕТАП 1: Захист від нескінченного циклу (Guard)
         stage('Guard: Check Skip CI') {
+            steps {
             script {
-                // Зчитуємо назву останнього комміту з Git
-                def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
-                echo "Останній комміт у репозиторії: ${commitMessage}"
+                    // Зчитуємо назву останнього комміту з Git
+                    def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                    echo "Останній комміт у репозиторії: ${commitMessage}"
                 
-                // Якщо комміт містить "skip ci", негайно зупиняємо пайплайн зі статусом SUCCESS
-                if (commitMessage.toLowerCase().contains("skip ci")) {
-                    echo "Виявлено прапор [skip ci]. Зупиняємо збірку, щоб розірвати нескінченний цикл GitOps."
-                    currentBuild.result = 'SUCCESS'
-                    error("Збірку пропущено автоматично: виявлено skip ci")
+                    // Якщо комміт містить "skip ci", негайно зупиняємо пайплайн зі статусом SUCCESS
+                    if (commitMessage.toLowerCase().contains("skip ci")) {
+                        echo "Виявлено прапор [skip ci]. Зупиняємо збірку, щоб розірвати нескінченний цикл GitOps."
+                        currentBuild.result = 'SUCCESS'
+                        error("Збірку пропущено автоматично: виявлено skip ci")
+                    }
                 }
             }
         }
