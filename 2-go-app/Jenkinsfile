@@ -41,7 +41,7 @@ pipeline {
         // ЕТАП 1: Захист від нескінченного циклу (Guard)
         stage('Guard: Check Skip CI') {
             steps {
-            script {
+               script {
                     // Зчитуємо назву останнього комміту з Git
                     def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
                     echo "Останній комміт у репозиторії: ${commitMessage}"
