@@ -1,11 +1,13 @@
 // Jenkinsfile Groovy
 pipeline {
+    // Пайплайн запускається на вбудованому (майстер) агенті Jenkins
     agent {
         node {
             label 'built-in'
         }
     }
 
+    // Підключення інструментів розробки, налаштованих у Jenkins Global Tool Configuration
     tools {
         go 'go-1.26.3' 
     }
@@ -14,78 +16,104 @@ pipeline {
 //        githubPush() 
 //    }
     
+    // Секція змінних оточення (глобальні налаштування проекту)
     environment {
         APP_NAME = "go-app"
         DOCKER_USER = "andreasprinz"
-        DOCKER_PASS = "dockerhub-deploy-token"
+        DOCKER_PASS = "dockerhub-deploy-token" // ID облікових даних Jenkins для Docker Hub
 	DOCKER_IMAGE = "${DOCKER_USER}" + "/" + "${APP_NAME}"
-        // Приклад адреси Nexus у кластері:
-//        DOCKER_IMAGE = "nexus-nexus-repository-manager.nexus.svc.cluster.local:8082/go-app"
-        VERSION = "v2.0.0-b${BUILD_NUMBER}"
+
+	// Генеруємо унікальну версію для кожного білду (наприклад, v2.0.0-b42)
+	VERSION = "v2.0.0-b${BUILD_NUMBER}"
         
+        // Налаштування Git-репозиторію для автоматичного пушу маніфестів
         REPO_URL = "github.com/andreas-prinz/devops-diploma-project"
         REPO_BRANCH = "master"
-        REPO_TOKEN = "github-deploy-token"
+        REPO_TOKEN = "github-deploy-token" // ID токена доступу Jenkins до GitHub (PAT)
         
+        // Налаштування для аналізу якості коду в SonarQube
         SONAR_SERVER = 'sonarqube-server'
         SONAR_SCANNER_HOME = tool 'sonarqube-scanner'
         SONAR_TOKEN = 'jenkins-sonarqube-token'
     }
 
     stages {
+        // ЕТАП 1: Захист від нескінченного циклу (Guard)
+        stage('Guard: Check Skip CI') {
+            script {
+                // Зчитуємо назву останнього комміту з Git
+                def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                echo "Останній комміт у репозиторії: ${commitMessage}"
+                
+                // Якщо комміт містить "skip ci", негайно зупиняємо пайплайн зі статусом SUCCESS
+                if (commitMessage.toLowerCase().contains("skip ci")) {
+                    echo "Виявлено прапор [skip ci]. Зупиняємо збірку, щоб розірвати нескінченний цикл GitOps."
+                    currentBuild.result = 'SUCCESS'
+                    error("Збірку пропущено автоматично: виявлено skip ci")
+                }
+            }
+        }
+        
+        // ЕТАП 2: Очищення робочого простору перед початком роботи
         stage('Clean Workspace') {
             steps {
                 cleanWs()
             }
         }
 
+        // ЕТАП 3: Завантаження свіжого коду з Git-репозиторію
         stage('Checkout from SCM') {
             steps {
                 git branch: "${REPO_BRANCH}", credentialsId: "${REPO_TOKEN}", url: "https://" + "${REPO_URL}"
             }
         }
 
+        // ЕТАП 4: Тестування додатку на Go
         stage('Test') {
             steps {
-//                withEnv(['CGO_ENABLED=1']) {
                 dir('2-go-app') {
                     sh 'pwd'
                     sh 'ls -la'
                     sh '''
+                        # Перевіряємо наявність go.mod, якщо немає — ініціалізуємо для збірки тесту
                         if [ ! -f go.mod ]; then
                             go mod init my-diploma-app
                             go mod tidy
                         fi
                     '''
-                    // -v дає детальний лог кожного тесту
-                    // -race перевіряє код на проблеми з конкурентністю (race conditions)
+                    // Запуск тестів із детальним логом (-v) та збором метрик покриття коду
                     sh 'go test -v -coverprofile=coverage.out ./...'
-//                }
                 }
             }
         }
         
+        // ЕТАП 5: Статичний аналіз коду в SonarQube
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONAR_SERVER}") {
                     withCredentials([string(credentialsId: "${SONAR_TOKEN}", variable: 'SONAR_TOKEN')]) {
+                        // Надсилаємо результати тестування та покриття (coverage.out) до SonarQube
                         sh '${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=my-go-web-app -Dsonar.projectName="My Go Web Application" -Dsonar.sources=2-go-app -Dsonar.exclusions="**/*_test.go,**/vendor/**" -Dsonar.tests=2-go-app -Dsonar.test.inclusions="**/*_test.go" -Dsonar.go.coverage.reportPaths=2-go-app/coverage.out'
                     }
                 }
             }
         }
 
+        // ЕТАП 6: Перевірка воріт якості (Quality Gate)
         stage('Quality Gate') {
             steps {
+                // Очікуємо відповіді від сервера SonarQube. Якщо код низької якості, пайплайн впаде
                 timeout(time: 10, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true, credentialsId: "${SONAR_TOKEN}"
                 }
             }
         }
         
+        // ЕТАП 7: Збірка Docker-образу з оптимізованим кэшуванням (Buildx + DinD)
         stage('Build & Push Docker Image') {
             agent {
                 kubernetes {
+                    // Створюємо динамічний окремий под для ізольованої збірки Docker
                     yaml '''
 apiVersion: v1
 kind: Pod
@@ -114,22 +142,31 @@ spec:
                         container('docker-cli') {
                             sh '''
                                 set -x
+                                # Очікуємо 5 секунд, поки підніметься мережевий сокет у сусідньому контейнері DinD
                                 sleep 5
                                 cd 2-go-app/
                                 if [ ! -f go.mod ]; then
                                     go mod init my-diploma-app
                                     go mod tidy
                                 fi
-                                ls -la                        
+                                ls -la
+                                
+                                # Авторизуємося в Docker Hub (у тихому режимі для безпеки логів)
                                 echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
-                     
+                                
+                                # Активуємо сучасний розширений двигун збірки Buildx
                                 docker buildx create --use --name mybuilder
                                 
+                                # Збірка з оптимізацією: завантажуємо та зберігаємо кэш шарів прямо в Docker Hub (тег :cache)
+                                # Це прискорює повторні збірки в рази, оскільки базові шари Go не скачуються заново
                                 docker buildx build \
                                     --cache-from=type=registry,ref=${DOCKER_IMAGE}:cache \
                                     --cache-to=type=registry,ref=${DOCKER_IMAGE}:cache,mode=max \
                                     -t ${DOCKER_IMAGE}:${VERSION} \
                                     --push .
+                                
+                                # Видаляємо конфіг з токеном авторизації після завершення пушу
+                                rm -f /root/.docker/config.json
                             '''
                         }
                     }
@@ -137,10 +174,11 @@ spec:
             }
         }
             
+        // ЕТАП 8: Оновлення Kubernetes маніфестів для Argo CD (GitOps)
         stage('Update Manifests (GitOps)') {
             steps {
-                // Jenkins заходить у репозиторій з маніфестами і змінює тег образу
-                // Це тригерить ArgoCD на розгортання
+                // Jenkins оновлює файл конфігурації k8s, вписуючи туди нову унікальну версію образу
+                // Argo CD автоматично помітить цю зміну у Git та оновить додаток у кластері
                 withCredentials([usernamePassword(credentialsId: "${REPO_TOKEN}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}", "REPO_URL=${REPO_URL}", "REPO_BRANCH=${REPO_BRANCH}"]) {
                         sh '''
@@ -150,11 +188,16 @@ spec:
                            pwd
                            ls -la
                            
+                           # Утилітою sed динамічно замінюємо старий тег образу на новий у файлі конфігурації
                            sed -i "s|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|" 3-k8s-manifests/rollout.yaml
+                           
+                           # Виводимо у лог зміни для перевірки коректності перед коммітом
                            git diff 3-k8s-manifests/rollout.yaml
+                           
+                           # Фіксуємо зміни та робимо пуш назад у GitHub обов'язково з прапором [skip ci]
                            git add 3-k8s-manifests/rollout.yaml
                            git commit -m "Update image to ${VERSION} [skip ci]"
-                           git push https://${GIT_USER}:${GIT_TOKEN}@${REPO_URL} ${REPO_BRANCH}
+                           git push https://${GIT_USER}:${GIT_TOKEN}@${REPO_URL} ${REPO_BRANCH}                           
                         '''
                     }
                 }
