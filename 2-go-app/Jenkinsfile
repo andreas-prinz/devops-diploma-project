@@ -42,15 +42,31 @@ pipeline {
         stage('Guard: Check Skip CI') {
             steps {
                script {
-                    // Зчитуємо назву останнього комміту з Git
+                    // Отримуємо хеш поточного комміту
+                    def currentCommit = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    echo "Поточний хеш комміту: ${currentCommit}"
+                    
+                    // Отримуємо текст комміту для перевірки на [skip ci]
                     def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
-                    echo "Останній комміт у репозиторії: ${commitMessage}"
-                
-                    // Якщо комміт містить "skip ci", негайно зупиняємо пайплайн зі статусом SUCCESS
-                    if (commitMessage.toLowerCase().contains("skip ci")) {
-                        echo "Виявлено прапор [skip ci]. Зупиняємо збірку, щоб розірвати нескінченний цикл GitOps."
+                    
+                    // Намагаємося отримати хеш з попередньої збірки
+                    def previousCommit = null
+                    if (currentBuild.previousBuild != null) {
+                        // Витягуємо хеш, який реально збирався минулого разу
+                        previousCommit = currentBuild.previousBuild.rawBuild.getAction(hudson.plugins.git.util.BuildData.class)?.getLastBuiltRevision()?.getSha1String()
+                    }
+                    echo "Хеш комміту попередньої збірки: ${previousCommit}"
+                    
+                    // ПЕРЕВІРКА 1: Якщо хэші збігаються (хибний запуск Jenkins при "No Changes")
+                    if (currentCommit == previousCommit) {
+                        echo "Jenkins викликав збірку помилково (змін у Git немає). Зупиняємо пайплайн."
                         currentBuild.result = 'SUCCESS'
-                        error("Збірку пропущено автоматично: виявлено skip ci")
+                    }
+                    
+                    // ПЕРЕВІРКА 2: Якщо це легітимний комміт від кроку автоматизації GitOps
+                    if (commitMessage.toLowerCase().contains("skip ci")) {
+                        echo "Виявлено прапор [skip ci]. Наступні етапи будуть пропущені."
+                        currentBuild.result = 'SUCCESS'
                     }
                 }
             }
