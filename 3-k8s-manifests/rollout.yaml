@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: go-app-container
-        image: andreasprinz/go-app:v2.0.0-b129
+        image: andreasprinz/go-app:v2.0.0-b130
         ports:
         - containerPort: 8080
         livenessProbe:
