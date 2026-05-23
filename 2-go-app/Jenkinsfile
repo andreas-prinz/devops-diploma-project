@@ -84,23 +84,53 @@ pipeline {
         }
         
         stage('Build & Push Docker Image') {
+            agent {
+                kubernetes {
+                    yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: docker-cli
+    image: docker:27.0-cli
+    command: ["cat"]
+    tty: true
+    env:
+    - name: DOCKER_HOST
+      value: tcp://localhost:2375
+  - name: dind
+    image: docker:27.0-dind
+    securityContext:
+      privileged: true
+    env:
+    - name: DOCKER_TLS_CERTDIR
+      value: ""
+'''
+                }
+            }
             steps {
                 withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}"]) {
                     withCredentials([usernamePassword(credentialsId: "${DOCKER_PASS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh '''
-                            set -x
-                            cd 2-go-app/
-                            if [ ! -f go.mod ]; then
-                                go mod init my-diploma-app
-                                go mod tidy
-                            fi
-                            ls -la                        
-                            echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                        container('docker-cli') {
+                            sh '''
+                                set -x
+                                cd 2-go-app/
+                                if [ ! -f go.mod ]; then
+                                    go mod init my-diploma-app
+                                    go mod tidy
+                                fi
+                                ls -la                        
+                                echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
                      
-                            docker build -t ${DOCKER_IMAGE}:${VERSION} .
-                       
-                            docker push ${DOCKER_IMAGE}:${VERSION}
-                        '''
+                                docker buildx create --use --name mybuilder
+                                
+                                docker buildx build \
+                                    --cache-from=type=registry,ref=${DOCKER_IMAGE}:cache \
+                                    --cache-to=type=registry,ref=${DOCKER_IMAGE}:cache,mode=max \
+                                    -t ${DOCKER_IMAGE}:${VERSION} \
+                                    --push .
+                            '''
+                        }
                     }
                 }
             }
