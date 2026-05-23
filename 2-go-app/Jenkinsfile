@@ -24,7 +24,7 @@ pipeline {
 	DOCKER_IMAGE = "${DOCKER_USER}" + "/" + "${APP_NAME}"
 
 	// Генеруємо унікальну версію для кожного білду (наприклад, v2.0.0-b42)
-	VERSION = "v2.0.0-b${BUILD_NUMBER}"
+	VERSION = "v1.0.0-b${BUILD_NUMBER}"
         
         // Налаштування Git-репозиторію для автоматичного пушу маніфестів
         REPO_URL = "github.com/andreas-prinz/devops-diploma-project"

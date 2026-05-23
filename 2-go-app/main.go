@@ -22,7 +22,7 @@ type AppInfo struct {
 }
 
 // Поточна версія додатку (змінюй це значення при нових релізах)
-const AppVersion = "v2.0.0"
+const AppVersion = "v1.0.0"
 const WelcomeMessage = "DevOps Diploma Project API, Hello World!"
 
 func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
