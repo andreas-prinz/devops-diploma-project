@@ -71,6 +71,7 @@ pipeline {
         
         // ЕТАП 2: Очищення робочого простору перед початком роботи
         stage('Clean Workspace') {
+            when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
                 cleanWs()
             }
@@ -78,6 +79,7 @@ pipeline {
 
         // ЕТАП 3: Завантаження свіжого коду з Git-репозиторію
         stage('Checkout from SCM') {
+            when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
                 git branch: "${REPO_BRANCH}", credentialsId: "${REPO_TOKEN}", url: "https://" + "${REPO_URL}"
             }
@@ -85,6 +87,7 @@ pipeline {
 
         // ЕТАП 4: Тестування додатку на Go
         stage('Test') {
+            when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
                 dir('2-go-app') {
                     sh 'pwd'
@@ -104,6 +107,7 @@ pipeline {
         
         // ЕТАП 5: Статичний аналіз коду в SonarQube
         stage('SonarQube Analysis') {
+            when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
                 withSonarQubeEnv("${SONAR_SERVER}") {
                     withCredentials([string(credentialsId: "${SONAR_TOKEN}", variable: 'SONAR_TOKEN')]) {
@@ -116,6 +120,7 @@ pipeline {
 
         // ЕТАП 6: Перевірка воріт якості (Quality Gate)
         stage('Quality Gate') {
+            when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
                 // Очікуємо відповіді від сервера SonarQube. Якщо код низької якості, пайплайн впаде
                 timeout(time: 10, unit: 'MINUTES') {
@@ -151,6 +156,7 @@ spec:
 '''
                 }
             }
+            when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
                 withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}"]) {
                     withCredentials([usernamePassword(credentialsId: "${DOCKER_PASS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -191,6 +197,7 @@ spec:
             
         // ЕТАП 8: Оновлення Kubernetes маніфестів для Argo CD (GitOps)
         stage('Update Manifests (GitOps)') {
+            when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
                 // Jenkins оновлює файл конфігурації k8s, вписуючи туди нову унікальну версію образу
                 // Argo CD автоматично помітить цю зміну у Git та оновить додаток у кластері
