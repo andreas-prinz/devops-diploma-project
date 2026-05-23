@@ -114,6 +114,7 @@ spec:
                         container('docker-cli') {
                             sh '''
                                 set -x
+                                sleep 5
                                 cd 2-go-app/
                                 if [ ! -f go.mod ]; then
                                     go mod init my-diploma-app
