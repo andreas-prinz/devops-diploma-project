@@ -90,8 +90,20 @@ tool:
 EOF
     },
     {
-      name  = "controller.installPlugins[0]"
+      name  = "controller.installPlugins[3]"
       value = "pipeline-stage-view:latest"
+    },
+    {
+      name  = "controller.installPlugins[4]"
+      value = "dependency-check-jenkins-plugin:latest"
+    },
+        {
+      name  = "controller.JCasC.enabled"
+      value = "true"
+    },
+    {
+      name  = "controller.JCasC.configScripts.owasp-tool-config"
+      value = "tool:\n  dependencyCheck:\n    installations:\n      - name: \"OWASP-Default\"\n        properties:\n          - installSource:\n              installers:\n                - dependencyCheckInstaller:\n                    id: \"latest\""
     },
   ]
 }

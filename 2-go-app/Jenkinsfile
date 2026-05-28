@@ -108,10 +108,12 @@ pipeline {
         stage('OWASP Dependency-Check') {
             when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
-                script {
-                    // Сканування go.mod / go.sum, назва інсталяції: 'OWASP-Default'
-                    dependencyCheck additionalArguments: '--scan ./2-go-app --format HTML --format XML --out ./OWASP-Reports', odcInstallation: 'OWASP-Default'
-                    dependencyCheckPublisher pattern: 'OWASP-Reports/dependency-check-report.xml'
+                withCredentials([string(credentialsId: 'owasp-nvd-api-key-id', variable: 'NVD_KEY')]) {
+                    script {
+                        // Сканування go.mod / go.sum, назва інсталяції: 'OWASP-Default'
+                        dependencyCheck additionalArguments: "--scan ./2-go-app --format HTML --format XML --out ./OWASP-Reports --nvdApiKey ${NVD_KEY}", odcInstallation: 'OWASP-Default'
+                        dependencyCheckPublisher pattern: 'OWASP-Reports/dependency-check-report.xml'
+                    }
                 }
             }
         }
