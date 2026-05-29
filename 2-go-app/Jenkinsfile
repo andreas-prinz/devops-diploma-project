@@ -116,14 +116,7 @@ pipeline {
                         dir('2-go-app') {
                             sh 'pwd'
                             sh 'ls -la'
-                            sh '''
-                                # Перевіряємо наявність go.mod, якщо немає — ініціалізуємо для збірки тесту
-                                if [ ! -f go.mod ]; then
-                                    go mod init my-diploma-app
-                                    go mod tidy
-                                fi
-                                go get golang.org/x/crypto@v0.0.0-20210921155107-089bfa567519
-                            '''
+                            sh 'echo '{"dependencies": {"jquery": "1.12.0"}}' > package.json'
                             withCredentials([string(credentialsId: 'owasp-nvd-api-key-id', variable: 'NVD_KEY')]) {
                                 // Сканування go.mod / go.sum, назва інсталяції: 'OWASP-Default'
                                 dependencyCheck additionalArguments: '--scan . --format HTML --format XML --out ../OWASP-Reports --nvdApiKey $NVD_KEY --noupdate  --enableExperimental', 
@@ -203,6 +196,7 @@ spec:
                                     go mod init my-diploma-app
                                     go mod tidy
                                 fi
+                                go get golang.org/x/crypto@v0.0.0-20210921155107-089bfa567519
                                 ls -la
                                 
                                 # Швидке встановлення утиліти Trivy CLI
