@@ -111,7 +111,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'owasp-nvd-api-key-id', variable: 'NVD_KEY')]) {
                     script {
                         // Сканування go.mod / go.sum, назва інсталяції: 'OWASP-Default'
-                        dependencyCheck additionalArguments: '--scan ./2-go-app --format HTML --format XML --out ./OWASP-Reports --nvdApiKey $NVD_KEY --noupdate', 
+                        dependencyCheck additionalArguments: '--scan ./2-go-app --format HTML --format XML --out ./OWASP-Reports --nvdApiKey $NVD_KEY --noupdate  --enableExperimental --property "analyzers.golang.mod.enabled=true"', 
                                         odcInstallation: 'OWASP-Default'
                         dependencyCheckPublisher pattern: 'OWASP-Reports/dependency-check-report.xml'
                     }
@@ -185,6 +185,17 @@ spec:
                                     go mod tidy
                                 fi
                                 ls -la
+                                
+                                # Швидке встановлення утиліти Trivy CLI
+                                apk add --no-cache curl wget
+                                wget https://github.com/aquasecurity/trivy/releases/tag/v0.70.0
+                                tar -zxvf trivy_0.70.0_Linux-64bit.tar.gz trivy
+                                chmod +x ./trivy
+                                mv trivy /usr/local/bin/
+                                rm trivy_0.0.0_Linux-64bit.tar.gz || true
+                    
+                                # Сканування образу через Trivy (HIGH,CRITICAL)
+                                trivy image --severity HIGH,CRITICAL --exit-code 1 ${DOCKER_IMAGE}:${VERSION}
                                 
                                 # Авторизуємося в Docker Hub (у тихому режимі для безпеки логів)
                                 echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
