@@ -108,19 +108,21 @@ pipeline {
         stage('OWASP Dependency-Check') {
             when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
-                dir('2-go-app') {
-                    script {
-                        // Отримуємо точний системний шлях до Go, який Jenkins встановив через tools
-                        def goHome = tool name: 'go-1.26.3', type: 'go'
-                        // Примусово додаємо шлях до Go в PATH для цього кроку
-                        withEnv(["PATH+GO=${goHome}/bin"]) {
+                script {
+                    // Отримуємо точний системний шлях до Go, який Jenkins встановив через tools
+                    def goHome = tool name: 'go-1.26.3', type: 'go'
+                    // Примусово додаємо шлях до Go в PATH для цього кроку
+                    withEnv(["PATH+GO=${goHome}/bin"]) {
+                        dir('2-go-app') {
                             withCredentials([string(credentialsId: 'owasp-nvd-api-key-id', variable: 'NVD_KEY')]) {
                                 // Сканування go.mod / go.sum, назва інсталяції: 'OWASP-Default'
                                 dependencyCheck additionalArguments: '--scan . --format HTML --format XML --out ../OWASP-Reports --nvdApiKey $NVD_KEY --noupdate  --enableExperimental', 
                                         odcInstallation: 'OWASP-Default'
-                                dependencyCheckPublisher pattern: 'OWASP-Reports/dependency-check-report.xml'
+                                
                             }
                         }
+                        // Тепер Jenkins шукає звіт у корені робочої директорії, де він і лежить
+                        dependencyCheckPublisher pattern: 'OWASP-Reports/dependency-check-report.xml'
                     }
                 }
             }
