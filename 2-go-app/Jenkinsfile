@@ -117,6 +117,7 @@ pipeline {
                             sh 'pwd'
                             sh 'ls -la'
                             sh '''
+                                apk add --no-cache wget curl || true
                                 echo \\{\\"dependencies\\": \\{\\"jquery\\": \\"1.12.0\\"\\}\\} > package.json
                                 wget https://code.jquery.com/jquery-1.12.0.js -O jquery.js
                         
