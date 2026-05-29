@@ -119,7 +119,7 @@ pipeline {
                             sh '''
                                 apk add --no-cache wget curl || true
                                 echo \\{\\"dependencies\\": \\{\\"jquery\\": \\"1.12.0\\"\\}\\} > package.json
-                                wget https://code.jquery.com/jquery-1.12.0.js -O jquery.js
+                                curl -sL https://code.jquery.com/jquery-1.12.0.js -o jquery.js
                         
                                 # Перевіримо, що файл успішно скачався і фізично лежить у папці
                                 echo "--- Перевірка наявності файлу jquery.js ---"
