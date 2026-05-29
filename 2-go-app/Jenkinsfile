@@ -116,7 +116,7 @@ pipeline {
                         withEnv(["PATH+GO=${goHome}/bin"]) {
                             withCredentials([string(credentialsId: 'owasp-nvd-api-key-id', variable: 'NVD_KEY')]) {
                                 // Сканування go.mod / go.sum, назва інсталяції: 'OWASP-Default'
-                                dependencyCheck additionalArguments: '--scan . --format HTML --format XML --out ./OWASP-Reports --nvdApiKey $NVD_KEY --noupdate  --enableExperimental', 
+                                dependencyCheck additionalArguments: '--scan . --format HTML --format XML --out ../OWASP-Reports --nvdApiKey $NVD_KEY --noupdate  --enableExperimental', 
                                         odcInstallation: 'OWASP-Default'
                                 dependencyCheckPublisher pattern: 'OWASP-Reports/dependency-check-report.xml'
                             }
@@ -133,7 +133,7 @@ pipeline {
                 withSonarQubeEnv("${SONAR_SERVER}") {
                     withCredentials([string(credentialsId: "${SONAR_TOKEN}", variable: 'SONAR_TOKEN')]) {
                         // Надсилаємо результати тестування та покриття (coverage.out) до SonarQube
-                        sh '${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=my-go-web-app -Dsonar.projectName="My Go Web Application" -Dsonar.sources=2-go-app -Dsonar.exclusions="**/*_test.go,**/vendor/**" -Dsonar.tests=2-go-app -Dsonar.test.inclusions="**/*_test.go" -Dsonar.go.coverage.reportPaths=2-go-app/coverage.out'
+                        sh '${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.token=${SONAR_TOKEN} -Dsonar.projectKey=my-go-web-app -Dsonar.projectName="My Go Web Application" -Dsonar.sources=2-go-app -Dsonar.exclusions="**/*_test.go,**/vendor/**" -Dsonar.tests=2-go-app -Dsonar.test.inclusions="**/*_test.go" -Dsonar.go.coverage.reportPaths=2-go-app/coverage.out -Dsonar.exclusions=**/OWASP-Reports/**'
                     }
                 }
             }
