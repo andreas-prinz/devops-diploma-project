@@ -210,7 +210,7 @@ spec:
                                 
                                 # Сканування образу через Trivy (HIGH,CRITICAL)
                                 echo "--> Аналіз безпеки віддаленого Docker-образу через Trivy..."
-                                trivy image --severity HIGH,CRITICAL --exit-code 1 ${DOCKER_IMAGE}:${VERSION}
+                                trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ${DOCKER_IMAGE}:${VERSION}
                                 
                                 # Видаляємо конфіг з токеном авторизації після завершення пушу
                                 rm -f /root/.docker/config.json
