@@ -194,9 +194,6 @@ spec:
                                 mv trivy /usr/local/bin/
                                 rm trivy_0.70.0_Linux-64bit.tar.gz || true
                     
-                                # Сканування образу через Trivy (HIGH,CRITICAL)
-                                trivy image --severity HIGH,CRITICAL --exit-code 1 ${DOCKER_IMAGE}:${VERSION}
-                                
                                 # Авторизуємося в Docker Hub (у тихому режимі для безпеки логів)
                                 echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
                                 
@@ -210,6 +207,10 @@ spec:
                                     --cache-to=type=registry,ref=${DOCKER_IMAGE}:cache,mode=max \
                                     -t ${DOCKER_IMAGE}:${VERSION} \
                                     --push .
+                                
+                                # Сканування образу через Trivy (HIGH,CRITICAL)
+                                echo "--> Аналіз безпеки віддаленого Docker-образу через Trivy..."
+                                trivy image --severity HIGH,CRITICAL --exit-code 1 ${DOCKER_IMAGE}:${VERSION}
                                 
                                 # Видаляємо конфіг з токеном авторизації після завершення пушу
                                 rm -f /root/.docker/config.json
