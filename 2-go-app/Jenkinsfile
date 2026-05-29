@@ -118,6 +118,11 @@ pipeline {
                             sh 'ls -la'
                             sh '''
                                 echo \\{\\"dependencies\\": \\{\\"jquery\\": \\"1.12.0\\"\\}\\} > package.json
+                                wget https://code.jquery.com/jquery-1.12.0.js -O jquery.js
+                        
+                                # Перевіримо, що файл успішно скачався і фізично лежить у папці
+                                echo "--- Перевірка наявності файлу jquery.js ---"
+                                ls -lh jquery.js
                             '''    
                             withCredentials([string(credentialsId: 'owasp-nvd-api-key-id', variable: 'NVD_KEY')]) {
                                 // Сканування go.mod / go.sum, назва інсталяції: 'OWASP-Default'
