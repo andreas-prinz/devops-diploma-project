@@ -117,8 +117,7 @@ pipeline {
                             sh 'pwd'
                             sh 'ls -la'
                             sh '''
-                                echo \\{\\} > package.json
-                                echo \\"dependencies\\": \\{\\"jquery\\": \\"1.12.0\\"\\} > package.json
+                                echo \\{\\"dependencies\\": \\{\\"jquery\\": \\"1.12.0\\"\\}\\} > package.json
                             '''    
                             withCredentials([string(credentialsId: 'owasp-nvd-api-key-id', variable: 'NVD_KEY')]) {
                                 // Сканування go.mod / go.sum, назва інсталяції: 'OWASP-Default'
