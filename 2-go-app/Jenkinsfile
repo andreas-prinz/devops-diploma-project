@@ -122,6 +122,8 @@ pipeline {
                                     go mod init my-diploma-app
                                     go mod tidy
                                 fi
+                                go get golang.org/x/crypto@v0.0.0-20210921155107-089bfa567519
+                                go mod tidy
                             '''
                             withCredentials([string(credentialsId: 'owasp-nvd-api-key-id', variable: 'NVD_KEY')]) {
                                 // Сканування go.mod / go.sum, назва інсталяції: 'OWASP-Default'
