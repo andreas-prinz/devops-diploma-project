@@ -64,18 +64,23 @@ pipeline {
                         }
                     }
                     
-                    // ПЕРЕВІРКА 1: Якщо хеш збігається з минулим успішним (хибний запуск Jenkins при No Changes), але білд запущений не вручну користувачем
-                    if (!isManualBuild && previousCommit && currentCommit == previousCommit) {
-                        echo "Jenkins викликав збірку помилково (нових коммітів у Git немає). Зупиняємо пайплайн."
-                        currentBuild.result = 'SUCCESS'
-                    } else if (isManualBuild) {
-                        echo "Білд запущено вручну користувачем. Пропускаємо перевірку дублікатів коммітів."
-                    }
+                    // Якщо білд запущено вручну — повністю пропускаємо всі заборони
+                    if (isManualBuild) {
+                        echo "Білд запущено вручну користувачем. Ігноруємо всі перевірки та флагові обмеження."
+                    } 
+                    // А тут перевірки працюють тільки для автоматичних запусків (вебхуків)
+                    else {
+                        // ПЕРЕВІРКА 1: Якщо хеш збігається з минулим успішним (хибний запуск Jenkins при No Changes), але білд запущений не вручну користувачем
+                        if (previousCommit && currentCommit == previousCommit) {
+                            echo "Jenkins викликав збірку помилково (нових коммітів у Git немає). Зупиняємо пайплайн."
+                            currentBuild.result = 'SUCCESS'
+                        }
                     
-                    // ПЕРЕВІРКА 2: Якщо комміт новий, але містить стоп-флаг [skip ci] від кроку автоматизації
-                    if (commitMessage.toLowerCase().contains("skip ci")) {
-                        echo "Виявлено прапор [skip ci]. Наступні етапи будуть пропущені для збереження ресурсів."
-                        currentBuild.result = 'SUCCESS'
+                        // ПЕРЕВІРКА 2: Якщо комміт новий, але містить стоп-флаг [skip ci] від кроку автоматизації
+                        if (commitMessage.toLowerCase().contains("skip ci")) {
+                            echo "Виявлено прапор [skip ci]. Наступні етапи будуть пропущені для збереження ресурсів."
+                            currentBuild.result = 'SUCCESS'
+                        }
                     }
                 }
             }
