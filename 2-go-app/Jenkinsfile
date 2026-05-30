@@ -122,6 +122,7 @@ pipeline {
             }
         }
         
+        // ЕТАП 5: Тест на вразливості коду
         stage('OWASP Dependency-Check') {
             when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
@@ -156,7 +157,7 @@ pipeline {
             }
         }
         
-        // ЕТАП 5: Статичний аналіз коду в SonarQube
+        // ЕТАП 6: Статичний аналіз коду в SonarQube
         stage('SonarQube Analysis') {
             when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
@@ -169,7 +170,7 @@ pipeline {
             }
         }
 
-        // ЕТАП 6: Перевірка воріт якості (Quality Gate)
+        // ЕТАП 7: Перевірка воріт якості (Quality Gate)
         stage('Quality Gate') {
             when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
@@ -180,8 +181,8 @@ pipeline {
             }
         }
         
-        // ЕТАП 7: Збірка Docker-образу з оптимізованим кэшуванням (Buildx + DinD)
-        stage('Build & Push Docker Image') {
+        // ЕТАП 8: Збірка Docker-образу з оптимізованим кэшуванням (Buildx + DinD)
+        stage('Build & Push Docker Image & Trivy Scan) {
             agent {
                 kubernetes {
                     // Створюємо динамічний окремий под для ізольованої збірки Docker
@@ -248,7 +249,7 @@ spec:
                                 
                                 # Сканування образу через Trivy (HIGH,CRITICAL)
                                 echo "--> Аналіз безпеки віддаленого Docker-образу через Trivy..."
-                                trivy image --severity HIGH,CRITICAL --exit-code 0 ${DOCKER_IMAGE}:${VERSION}
+                                trivy image --severity HIGH,CRITICAL --no-progress --scanners vuln --format table --exit-code 0 ${DOCKER_IMAGE}:${VERSION}
                                 
                                 # Видаляємо конфіг з токеном авторизації після завершення пушу
                                 rm -f /root/.docker/config.json
@@ -259,7 +260,7 @@ spec:
             }
         }
             
-        // ЕТАП 8: Оновлення Kubernetes маніфестів для Argo CD (GitOps)
+        // ЕТАП 9: Оновлення Kubernetes маніфестів для Argo CD (GitOps)
         stage('Update Manifests (GitOps)') {
             when { expression { currentBuild.result != 'SUCCESS' } }
             steps {

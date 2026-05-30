@@ -32,6 +32,26 @@ resource "helm_release" "jenkins" {
       value = "git:latest"
     },
     {
+      name  = "controller.installPlugins[3]"
+      value = "github:latest"
+    },
+    {
+      name  = "controller.installPlugins[4]"
+      value = "ws-cleanup:latest"
+    },
+    {
+      name  = "controller.installPlugins[5]"
+      value = "golang:latest"
+    },
+    {
+      name  = "controller.installPlugins[6]"
+      value = "pipeline-stage-view:latest"
+    },
+    {
+      name  = "controller.installPlugins[7]"
+      value = "dependency-check-jenkins-plugin:latest"
+    },
+    {
       name  = "controller.resources.requests.cpu"
       value = "500m"
     },
@@ -63,14 +83,7 @@ resource "helm_release" "jenkins" {
 #       name  = "controller.installPlugins"
 #       value = "docker-build-publish:latest"
 #     },
-    {
-      name  = "controller.installPlugins"
-      value = "ws-cleanup:latest"
-    },
-    {
-      name  = "controller.installPlugins"
-      value = "golang:latest"
-    },
+
     {
       name  = "agent.enabled"
       value = "true"
@@ -90,14 +103,6 @@ tool:
 EOF
     },
     {
-      name  = "controller.installPlugins[3]"
-      value = "pipeline-stage-view:latest"
-    },
-    {
-      name  = "controller.installPlugins[4]"
-      value = "dependency-check-jenkins-plugin:latest"
-    },
-        {
       name  = "controller.JCasC.enabled"
       value = "true"
     },
