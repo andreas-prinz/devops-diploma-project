@@ -5,9 +5,16 @@ metadata:
   name: jenkins-ingress
   namespace: jenkins
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false" # вимкнено для тесту без сертифікатів
+    # nginx.ingress.kubernetes.io/ssl-redirect: "false" # вимкнено для тесту без сертифікатів
+    kubernetes.io/ingress.class: nginx
+    # Головна анотація для автоматичного випуску сертифіката:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - jenkins.diploma.sytes.net # Ваш домен
+    secretName: jenkins-tls-cert  # Назва секрету, куди запишеться SSL-сертифікат
   rules:
   - host: jenkins.diploma.sytes.net # Ваш домен No-IP
     http:
