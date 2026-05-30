@@ -5,13 +5,13 @@ metadata:
   name: go-app-stable
   namespace: diploma-prod
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: go-app # Service направляє трафік на всі поди з цим лейблом (і V1, і V2)
   ports:
   - protocol: TCP
     port: 80
     targetPort: 8080
-    nodePort: 32001
+#    nodePort: 32001
     protocol: TCP
 #  type: LoadBalancer # Для GCP, щоб отримати зовнішній IP для доступу

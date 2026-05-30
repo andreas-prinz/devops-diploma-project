@@ -1,0 +1,21 @@
+# 3-k8s-manifests/jenkins-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jenkins-ingress
+  namespace: jenkins
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false" # вимкнено для тесту без сертифікатів
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: jenkins.diploma.sytes.net # Ваш домен No-IP
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jenkins # назва сервісу
+            port:
+              number: 8080

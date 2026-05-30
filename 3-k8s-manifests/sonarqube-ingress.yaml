@@ -1,0 +1,21 @@
+# 3-k8s-manifests/sonarqube-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sonarqube-ingress
+  namespace: sonarqube
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false" # вимкнено для тесту без сертифікатів
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: sonarqube.diploma.sytes.net # Ваш домен No-IP
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sonarqube-sonarqube # назва сервісу
+            port:
+              number: 9000

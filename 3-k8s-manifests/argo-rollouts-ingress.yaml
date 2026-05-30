@@ -1,0 +1,21 @@
+# 3-k8s-manifests/argo-rollouts-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argo-rollouts-ingress
+  namespace: argo-rollouts
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false" # вимкнено для тесту без сертифікатів
+spec:
+  ingressClassName: nginx
+  rules:
+  # - host: argo-rollouts.diploma.sytes.net # Ваш домен No-IP
+  #   http:
+  #     paths:
+  #     - path: /
+  #       pathType: Prefix
+  #       backend:
+  #         service:
+  #           name: argo-rollouts-dashboard # назва сервісу
+  #           port:
+  #             number: 3100
