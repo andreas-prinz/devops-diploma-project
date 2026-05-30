@@ -22,15 +22,12 @@ resource "helm_release" "ingress-nginx" {
   set = [
     {
       name  = "controller.service.type"
-      value = "NodePort"
+      value = "ClusterIP"
     },
+    # ЦЕЙ ПАРАМЕТР САМ ПРИВ'ЯЖЕ NGINX ДО ПОРТІВ 80/443 САМОЇ Linux-МАШИНИ
     {
-      name  = "controller.service.nodePorts.http"
-      value = "30080" # фіксований порт для HTTP (за бажанням)
-    },
-    {
-      name  = "controller.service.nodePorts.https"
-      value = "30443" # фіксований порт для HTTPS (за бажанням)
+      name  = "controller.hostNetwork"
+      value = "true"
     },
     # Налаштування для коректної обробки Wildcard DNS від No-IP
     {

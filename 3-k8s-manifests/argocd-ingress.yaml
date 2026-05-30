@@ -13,7 +13,7 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - argocd.yourname.ddns.net
+    - argocd.diploma.sytes.net
     secretName: argocd-tls-cert
   rules:
   - host: argocd.diploma.sytes.net # Ваш домен No-IP
