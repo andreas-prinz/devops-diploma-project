@@ -182,7 +182,7 @@ pipeline {
         }
         
         // ЕТАП 8: Збірка Docker-образу з оптимізованим кэшуванням (Buildx + DinD)
-        stage('Build & Push Docker Image & Trivy Scan) {
+        stage('Build & Push Docker Image & Trivy Scan') {
             agent {
                 kubernetes {
                     // Створюємо динамічний окремий под для ізольованої збірки Docker
