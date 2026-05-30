@@ -54,9 +54,17 @@ pipeline {
                     def previousCommit = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT
                     echo "Хеш комміту попередньої успішної збірки: ${previousCommit}"
                     
-                    // ПЕРЕВІРКА 1: Якщо хеш збігається з минулим успішним (хибний запуск Jenkins при No Changes), але білд запущений НЕ вручну користувачем
-                    def isManualBuild = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause) != null
-
+                    // Перевірка на ручний запуск (абсолютно дозволений метод Jenkins)
+                    def buildCauses = currentBuild.getBuildCauses()
+                    def isManualBuild = false
+                    
+                    for (cause in buildCauses) {
+                        if (cause._class.contains("UserIdCause")) {
+                            isManualBuild = true
+                        }
+                    }
+                    
+                    // ПЕРЕВІРКА 1: Якщо хеш збігається з минулим успішним (хибний запуск Jenkins при No Changes), але білд запущений не вручну користувачем
                     if (!isManualBuild && previousCommit && currentCommit == previousCommit) {
                         echo "Jenkins викликав збірку помилково (нових коммітів у Git немає). Зупиняємо пайплайн."
                         currentBuild.result = 'SUCCESS'
