@@ -44,10 +44,10 @@ inputs = {
       machine_type       = "e2-standard-2"
       node_locations     = local.zone
       autoscaling        = true
-      min_count          = 1
+      min_count          = 0
       max_count          = 3
       # Стартова кількість нод при створенні
-      initial_node_count = 1
+      initial_node_count = 2
       spot               = true
       disk_size_gb       = 30
       disk_type          = "pd-balanced"
