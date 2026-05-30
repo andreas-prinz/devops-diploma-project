@@ -5,17 +5,26 @@ metadata:
   name: argo-rollouts-ingress
   namespace: argo-rollouts
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false" # вимкнено для тесту без сертифікатів
+    # nginx.ingress.kubernetes.io/ssl-redirect: "false" # вимкнено для тесту без сертифікатів
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: argo-rollouts-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: "Authentication Required - Argo Rollouts"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - argo-rollouts.diploma.sytes.net
+    secretName: argo-rollouts-tls-cert
   rules:
-  # - host: argo-rollouts.diploma.sytes.net # Ваш домен No-IP
-  #   http:
-  #     paths:
-  #     - path: /
-  #       pathType: Prefix
-  #       backend:
-  #         service:
-  #           name: argo-rollouts-dashboard # назва сервісу
-  #           port:
-  #             number: 3100
+  - host: argo-rollouts.diploma.sytes.net # Ваш домен No-IP
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argo-rollouts-dashboard # назва сервісу
+            port:
+              number: 3100

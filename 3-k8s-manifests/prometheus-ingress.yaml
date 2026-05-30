@@ -1,0 +1,33 @@
+# 3-k8s-manifests/prometheus-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-ingress
+  namespace: monitoring
+  annotations:
+    # nginx.ingress.kubernetes.io/ssl-redirect: "false" # вимкнено для тесту без сертифікатів
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Тип аутентифікації
+    nginx.ingress.kubernetes.io/auth-type: basic
+    # Назва секрету, який ми створили на Кроці 1
+    nginx.ingress.kubernetes.io/auth-secret: prometheus-basic-auth
+    # Текст, який відобразиться у вікні лічильника
+    nginx.ingress.kubernetes.io/auth-realm: "Authentication Required - Prometheus"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - prometheus.diploma.sytes.net
+    secretName: prometheus-tls-cert
+  rules:
+  - host: prometheus.diploma.sytes.net # Ваш домен No-IP
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus-stack-grafana # назва сервісу
+            port:
+              number: 8080
