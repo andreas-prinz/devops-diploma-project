@@ -28,6 +28,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: prometheus-stack-grafana # назва сервісу
+            name: prometheus-stack-kube-prom-prometheus # назва сервісу
             port:
               number: 8080
