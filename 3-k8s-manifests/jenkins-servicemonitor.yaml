@@ -1,0 +1,26 @@
+# 3-k8s-manifests/jenkins-servicemonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: jenkins-metrics-monitor
+  # Обов'язково створюємо у тому ж неймспексі, де лежить сам Jenkins!
+  namespace: jenkins 
+  labels:
+    # Ця мітка критично важлива! Вона каже Prometheus оператору підхопити цей монітор.
+    # Перевірте, яка мітка стоїть у вашому Helm-чарті Prometheus для селектора (зазвичай release: prometheus-stack)
+    release: prometheus-stack 
+spec:
+  # Шукаємо сервіс Дженкінса за його мітками:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: jenkins-controller # Підставте мітку вашого сервісу з Кроку 1
+  # Вказуємо простір імен, де шукати сервіс
+  namespaceSelector:
+    matchNames:
+      - jenkins
+  # Налаштування самого ендпоінту збору метрик
+  endpoints:
+  - port: http # Назва порту у сервісі Jenkins (зазвичай http або http-port, що веде на 8080)
+    path: /prometheus/ # Ендпоінт, який створив наш новий плагін
+    interval: 15s # Як часто забирати метрики
+    scrapeTimeout: 10s

@@ -52,6 +52,10 @@ resource "helm_release" "jenkins" {
       value = "dependency-check-jenkins-plugin:latest"
     },
     {
+      name  = "controller.installPlugins[8]"
+      value = "prometheus:latest"
+    },
+    {
       name  = "controller.resources.requests.cpu"
       value = "500m"
     },
