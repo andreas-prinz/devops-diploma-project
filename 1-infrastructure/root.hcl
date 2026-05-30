@@ -41,11 +41,11 @@ EOF
 generate "shared_providers" {
   path      = "shared_providers.tf"
   if_exists = "overwrite_terragrunt"
+  # Прибираємо генерацію файлу для мережі, gke та базових сервісів
   contents  = (length(regexall(".*/(network|gke|services)$", path_relative_to_include())) > 0) ? "" : <<EOF
 variable "cluster_name" { type = string }
 variable "project_id"   { type = string }
 variable "location"     { type = string }
-variable "passcode"     { type = string }
 
 # Налаштування підключення до GKE
 data "google_client_config" "default" {}

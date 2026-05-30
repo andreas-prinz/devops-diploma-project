@@ -10,6 +10,11 @@ terraform {
   }
 }
 
+variable "passcode" {
+  type        = string
+  description = "Monitoring passcode for SonarQube"
+}
+
 resource "helm_release" "sonarqube" {
   name             = "sonarqube"
   repository       = "https://sonarsource.github.io/helm-chart-sonarqube"
