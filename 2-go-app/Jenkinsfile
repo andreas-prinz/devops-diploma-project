@@ -263,7 +263,7 @@ spec:
         stage('Update Manifests (GitOps)') {
             when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
-                // Jenkins оновлює файл конфігурації k8s, вписуючи туди нову унікальну версію образу
+                // Jenkins оновлює файл конфігурації K8s, вписуючи туди нову унікальну версію образу
                 // Argo CD автоматично помітить цю зміну у Git та оновить додаток у кластері
                 withCredentials([usernamePassword(credentialsId: "${REPO_TOKEN}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}", "REPO_URL=${REPO_URL}", "REPO_BRANCH=${REPO_BRANCH}"]) {
