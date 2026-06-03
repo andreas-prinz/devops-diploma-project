@@ -11,11 +11,7 @@ pipeline {
     tools {
         go 'go-1.26.3' 
     }
-    
-//     triggers {
-//        githubPush() 
-//    }
-    
+  
     // Секція змінних оточення (глобальні налаштування проекту)
     environment {
         APP_NAME = "go-app"
