@@ -120,11 +120,20 @@ Prometheus + Grafana
 │   ├── Dockerfile                    # Контейнеризація застосунку
 │   └── Jenkinsfile                   # Опис CI/CD-конвеєра
 │
-├── 3-k8s-manifests/                  # GitOps-репозиторій
-│   ├── rollout.yaml                  # Canary Deployment (Argo Rollouts)
-│   ├── service.yaml                  # Kubernetes Service
-│   ├── deployment.yaml               # Базове розгортання застосунку
-│   └── argocd-app.yaml               # Реєстрація застосунку в ArgoCD
+├── 3-k8s-manifests/                  # GitOps-маніфести Kubernetes
+│   ├── namespace.yaml                # Створення окремого namespace для проєкту
+│   ├── rollout.yaml                  # Canary Deployment через Argo Rollouts
+│   ├── service-stable.yaml           # Сервіс для стабільної версії застосунку
+│   ├── service-canary.yaml           # Сервіс для Canary-версії застосунку
+│   ├── argocd-app.yaml               # Реєстрація застосунку в ArgoCD
+│   ├── app-ingress.yaml              # Ingress для доступу до застосунку
+│   ├── argocd-ingress.yaml           # Ingress для ArgoCD
+│   ├── argo-rollouts-ingress.yaml    # Ingress для Argo Rollouts Dashboard
+│   ├── grafana-ingress.yaml          # Ingress для Grafana
+│   ├── prometheus-ingress.yaml       # Ingress для Prometheus
+│   ├── jenkins-ingress.yaml          # Ingress для Jenkins
+│   ├── jenkins-servicemonitor.yaml   # Моніторинг Jenkins через Prometheus
+│   └── sonarqube-ingress.yaml        # Ingress для SonarQube
 │
 ├── docs/                             # Матеріали дипломної роботи
 │   ├── architecture.png              # Архітектура інфраструктури
