@@ -99,19 +99,52 @@ Prometheus + Grafana
 │
 ├── 1-infrastructure/                 # Інфраструктура як код (IaC)
 │   ├── root.hcl                      # Провайдер GCP та Remote State
-│   ├── modules/
-│   │   └── k8s-tools/
-│   │       └── main.tf               # Встановлення DevOps-інструментів через Helm
-│   │                                 # (ArgoCD, Rollouts, Jenkins, Nexus,
-│   │                                 # GitLab, Prometheus, Grafana)
 │   │
-│   └── prod/
-│       ├── network/
-│       │   └── terragrunt.hcl        # Створення VPC та підмереж
+│   ├── modules/                      # Terraform/Terragrunt модулі
+│   │   ├── argo-rollouts/
+│   │   │   └── main.tf               # Встановлення Argo Rollouts
+│   │   ├── argocd/
+│   │   │   └── main.tf               # Встановлення ArgoCD
+│   │   ├── cert-manager/
+│   │   │   └── main.tf               # Сертифікати Let's Encrypt
+│   │   ├── gitlab/
+│   │   │   └── main.tf               # Розгортання GitLab
+│   │   ├── ingress-nginx/
+│   │   │   └── main.tf               # NGINX Ingress Controller
+│   │   ├── jenkins/
+│   │   │   └── main.tf               # Jenkins CI Server
+│   │   ├── nexus/
+│   │   │   └── main.tf               # Sonatype Nexus Repository
+│   │   ├── prometheus-grafana/
+│   │   │   └── main.tf               # Моніторинг та Observability
+│   │   └── sonar-qube/
+│   │       └── main.tf               # SonarQube для аналізу коду
+│   │
+│   └── prod/                         # Production середовище
+│       ├── argo-rollouts/
+│       │   └── terragrunt.hcl        # Конфігурація Argo Rollouts
+│       ├── argocd/
+│       │   └── terragrunt.hcl        # Конфігурація ArgoCD
+│       ├── cert-manager/
+│       │   └── terragrunt.hcl        # Сертифікати та Issuer
+│       ├── gitlab/
+│       │   └── terragrunt.hcl        # Розгортання GitLab
 │       ├── gke/
-│       │   └── terragrunt.hcl        # Розгортання Kubernetes-кластера
-│       └── tools/
-│           └── terragrunt.hcl        # Розгортання DevOps-інструментів
+│       │   └── terragrunt.hcl        # Kubernetes-кластер GKE
+│       ├── ingress-nginx/
+│       │   └── terragrunt.hcl        # NGINX Ingress Controller
+│       ├── jenkins/
+│       │   └── terragrunt.hcl        # Jenkins CI Server
+│       ├── network/
+│       │   └── terragrunt.hcl        # VPC та мережева інфраструктура
+│       ├── nexus/
+│       │   └── terragrunt.hcl        # Sonatype Nexus Repository
+│       ├── prometheus-grafana/
+│       │   └── terragrunt.hcl        # Prometheus та Grafana
+│       ├── services/
+│       │   └── terragrunt.hcl        # Допоміжні GCP-сервіси
+│       └── sonar-qube/
+│           └── terragrunt.hcl        # SonarQube для аналізу якості коду
 │
 ├── 2-go-app/                         # Вихідний код застосунку
 │   ├── main.go                       # Основна логіка веб-сервісу
