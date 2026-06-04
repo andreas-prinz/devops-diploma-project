@@ -14,7 +14,7 @@ resource "helm_release" "nexus" {
   name             = "nexus"
   repository       = "https://sonatype.github.io/helm3-charts/"
   chart            = "nexus-repository-manager"
-  version          = "92.2.0"
+  version          = "64.2.0"
   namespace        = "nexus"
   create_namespace = true
 

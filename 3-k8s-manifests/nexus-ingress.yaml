@@ -1,0 +1,28 @@
+# 3-k8s-manifests/nexus-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nexus-ingress
+  namespace: nexus
+  annotations:
+    # nginx.ingress.kubernetes.io/ssl-redirect: "false" # вимкнено для тесту без сертифікатів
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - nexus.diploma.sytes.net
+    secretName: nexus-tls-cert
+  rules:
+  - host: nexus.diploma.sytes.net # Ваш домен No-IP
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nexus-nexus-repository-manager # назва сервісу
+            port:
+              number: 8081
