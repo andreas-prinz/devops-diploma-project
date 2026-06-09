@@ -5,9 +5,19 @@ metadata:
   name: app-ingress
   namespace: diploma-prod
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false" # вимкнено для тесту без сертифікатів
+    # nginx.ingress.kubernetes.io/ssl-redirect: "false" # вимкнено для тесту без сертифікатів
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - stable.diploma.sytes.net
+    secretName: stable-tls-cert
+  - hosts:
+    - canary.diploma.sytes.net
+    secretName: canary-tls-cert
   rules:
   - host: stable.diploma.sytes.net # Ваш домен No-IP
     http:
