@@ -20,7 +20,7 @@ pipeline {
 	DOCKER_IMAGE = "${DOCKER_USER}" + "/" + "${APP_NAME}"
 
 	// Генеруємо унікальну версію для кожного білду (наприклад, v2.0.0-b42)
-	VERSION = "v1.0.0-b${BUILD_NUMBER}"
+	VERSION = "v2.0.0-b${BUILD_NUMBER}"
         
         // Налаштування Git-репозиторію для автоматичного пушу маніфестів
         REPO_URL = "github.com/andreas-prinz/devops-diploma-project"
@@ -97,23 +97,65 @@ pipeline {
                 git branch: "${REPO_BRANCH}", credentialsId: "${REPO_TOKEN}", url: "https://" + "${REPO_URL}"
             }
         }
+        
+        // ЕТАП 3.1: Перевірка репозиторію на витік секретів та токенів
+        stage('Security: Gitleaks Scan') {
+            when { expression { currentBuild.result != 'SUCCESS' } }
+            options {
+                // Встановлюємо обмеження за часом, щоб білд не завис назавжди, якщо впаде кластер
+                timeout(time: 2, unit: 'MINUTES')
+            }
+            steps {
+                echo "--> Запуск сканування репозиторію на наявність секретів через Kubernetes..."
+                withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: "${KUBE_CREDENTIALS}", serverUrl: '') {
+                    
+                    sh '''
+                        set -x
+                        
+                        # Створення тимчасового архіву з кодом додатка для передачі в под
+                        tar -czf app-code.tar.gz .'
+                    
+                        # Запуск тимчасового пода з Gitleaks у кластері та передача туди архіву з кодом
+                        kubectl run gitleaks-scanner \
+                        --image=zricethezav/gitleaks:latest \
+                        --restart=Never \
+                        --rm -i \
+                        --overrides='{
+                          "spec": {
+                            "containers": [{
+                              "name": "gitleaks",
+                              "image": "zricethezav/gitleaks:v8.30.1",
+                              "command": ["sh", "-c", "tar -xzf - && gitleaks detect --source=. --verbose"]
+                            }]
+                          }
+                        }' < app-code.tar.gz
+                        
+                        # Очищення тимчасового архіву на вбудованому агенті Jenkins
+                        rm -f app-code.tar.gz
+                    '''
+                }
+            }
+        }
 
         // ЕТАП 4: Тестування додатку на Go
         stage('Test') {
             when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
                 dir('2-go-app') {
-                    sh 'pwd'
-                    sh 'ls -la'
                     sh '''
+                        set -x
+                        pwd
+                        ls -la
+                        
                         # Перевіряємо наявність go.mod, якщо немає — ініціалізуємо для збірки тесту
                         if [ ! -f go.mod ]; then
-                            go mod init my-diploma-app
-                            go mod tidy
+                          go mod init my-diploma-app
+                          go mod tidy
                         fi
+                        
+                        # Запуск тестів із детальним логом (-v) та збором метрик покриття коду
+                        go test -v -coverprofile=coverage.out ./...
                     '''
-                    // Запуск тестів із детальним логом (-v) та збором метрик покриття коду
-                    sh 'go test -v -coverprofile=coverage.out ./...'
                 }
             }
         }
@@ -128,9 +170,11 @@ pipeline {
                     // Примусово додаємо шлях до Go в PATH для цього кроку
                     withEnv(["PATH+GO=${goHome}/bin"]) {
                         dir('2-go-app') {
-                            sh 'pwd'
-                            sh 'ls -la'
                             sh '''
+                                set -x
+                                pwd
+                                ls -la
+                                
                                 apk add --no-cache wget curl || true
                                 echo \\{\\"dependencies\\": \\{\\"jquery\\": \\"1.12.0\\"\\}\\} > package.json
                                 curl -sL https://code.jquery.com/jquery-1.12.0.js -o jquery.js
@@ -211,14 +255,18 @@ spec:
                         container('docker-cli') {
                             sh '''
                                 set -x
+                                
                                 # Очікуємо 5 секунд, поки підніметься мережевий сокет у сусідньому контейнері DinD
                                 sleep 5
+                                
                                 cd 2-go-app/
                                 if [ ! -f go.mod ]; then
                                     go mod init my-diploma-app
                                     go mod tidy
                                 fi
                                 go get golang.org/x/crypto@v0.0.0-20210921155107-089bfa567519
+                                
+                                pwd
                                 ls -la
                                 
                                 # Швидке встановлення утиліти Trivy CLI
@@ -265,11 +313,12 @@ spec:
                 withCredentials([usernamePassword(credentialsId: "${REPO_TOKEN}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     withEnv(["DOCKER_IMAGE=${DOCKER_IMAGE}", "VERSION=${VERSION}", "REPO_URL=${REPO_URL}", "REPO_BRANCH=${REPO_BRANCH}"]) {
                         sh '''
-                           git config --global user.email "jenkins@ci-cd.local"
-                           git config --global user.name "Jenkins CI"
-                           
+                           set -x
                            pwd
                            ls -la
+                           
+                           git config --global user.email "jenkins@ci-cd.local"
+                           git config --global user.name "Jenkins CI"
                            
                            # Утилітою sed динамічно замінюємо старий тег образу на новий у файлі конфігурації
                            sed -i "s|image: .*|image: ${DOCKER_IMAGE}:${VERSION}|" 3-k8s-manifests/rollout.yaml
