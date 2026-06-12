@@ -108,31 +108,24 @@ pipeline {
                 timeout(time: 2, unit: 'MINUTES')
             }
             steps {
-                echo "--> Запуск сканування репозиторію на наявність секретів через Kubernetes..."
-                sh '''
-                    set -x
-                        
-                    # Створення тимчасового архіву з кодом додатка для передачі в под
-                    tar -czf /tmp/app-code.tar.gz .
-                   
-                    # Запуск тимчасового пода з Gitleaks у кластері та передача туди архіву з кодом
-                    kubectl run gitleaks-scanner \
-                        --image=zricethezav/gitleaks:v8.30.1 \
-                        --restart=Never \
-                        --rm -i \
-                        --overrides='{
-                          "spec": {
-                            "containers": [{
-                              "name": "gitleaks",
-                              "image": "zricethezav/gitleaks:v8.30.1",
-                              "command": ["sh", "-c", "tar -xzf - && gitleaks detect --source=. --verbose"]
-                            }]
-                          }
-                        }' < /tmp/app-code.tar.gz
-                        
-                    # Очищення тимчасового архіву на вбудованому агенті Jenkins
-                    rm -f /tmp/app-code.tar.gz
-                '''
+                echo "--> Завантаження та запуск Gitleaks локально на агенті..."
+                script {
+                    sh '''
+                        # КРОК 1: Скачуємо офіційний стабільний бінарний файл Gitleaks v8.30.1 для Linux AMD64
+                        curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz | tar -xz gitleaks
+                    
+                        # КРОК 2: Запускаємо локальний файл та зберігаємо статус його виконання
+                        int status = sh(script: './gitleaks detect --verbose', returnStatus: true)
+                    
+                        # КРОК 3: Видаляємо бінарний файл, щоб не засмічувати робочу директорію Jenkins
+                        rm -f gitleaks
+                    
+                        # КРОК 4: Якщо Gitleaks знайшов секрети (код повернення не 0), зупиняємо пайплайн
+                        if (status != 0) {
+                            error "Gitleaks виявив секрети або токени в репозиторії! Збірку зупинено."
+                        }
+                    '''
+                }
             }
         }
 
