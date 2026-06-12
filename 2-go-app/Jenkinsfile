@@ -113,7 +113,7 @@ pipeline {
                     set -x
                         
                     # Створення тимчасового архіву з кодом додатка для передачі в под
-                    tar -czf app-code.tar.gz .
+                    tar -czf /tmp/app-code.tar.gz .
                    
                     # Запуск тимчасового пода з Gitleaks у кластері та передача туди архіву з кодом
                     kubectl run gitleaks-scanner \
@@ -128,10 +128,10 @@ pipeline {
                               "command": ["sh", "-c", "tar -xzf - && gitleaks detect --source=. --verbose"]
                             }]
                           }
-                        }' < app-code.tar.gz
+                        }' < /tmp/app-code.tar.gz
                         
                     # Очищення тимчасового архіву на вбудованому агенті Jenkins
-                    rm -f app-code.tar.gz
+                    rm -f /tmp/app-code.tar.gz
                 '''
             }
         }
