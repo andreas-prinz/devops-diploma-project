@@ -31,6 +31,8 @@ pipeline {
         SONAR_SERVER = 'sonarqube-server'
         SONAR_SCANNER_HOME = tool 'sonarqube-scanner'
         SONAR_TOKEN = 'jenkins-sonarqube-token'
+        
+        OWASP_KEY = 'owasp-nvd-api-key-id'
     }
 
     stages {
@@ -107,16 +109,14 @@ pipeline {
             }
             steps {
                 echo "--> Запуск сканування репозиторію на наявність секретів через Kubernetes..."
-                withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: "${KUBE_CREDENTIALS}", serverUrl: '') {
-                    
-                    sh '''
-                        set -x
+                sh '''
+                    set -x
                         
-                        # Створення тимчасового архіву з кодом додатка для передачі в под
-                        tar -czf app-code.tar.gz .'
-                    
-                        # Запуск тимчасового пода з Gitleaks у кластері та передача туди архіву з кодом
-                        kubectl run gitleaks-scanner \
+                    # Створення тимчасового архіву з кодом додатка для передачі в под
+                    tar -czf app-code.tar.gz .'
+                   
+                    # Запуск тимчасового пода з Gitleaks у кластері та передача туди архіву з кодом
+                    kubectl run gitleaks-scanner \
                         --image=zricethezav/gitleaks:latest \
                         --restart=Never \
                         --rm -i \
@@ -130,10 +130,9 @@ pipeline {
                           }
                         }' < app-code.tar.gz
                         
-                        # Очищення тимчасового архіву на вбудованому агенті Jenkins
-                        rm -f app-code.tar.gz
-                    '''
-                }
+                    # Очищення тимчасового архіву на вбудованому агенті Jenkins
+                    rm -f app-code.tar.gz
+                '''
             }
         }
 
@@ -183,7 +182,7 @@ pipeline {
                                 echo "--- Перевірка наявності файлу jquery.js ---"
                                 ls -lh jquery.js
                             '''    
-                            withCredentials([string(credentialsId: 'owasp-nvd-api-key-id', variable: 'NVD_KEY')]) {
+                            withCredentials([string(credentialsId: "${OWASP_KEY}", variable: 'NVD_KEY')]) {
                                 // Сканування go.mod / go.sum, назва інсталяції: 'OWASP-Default'
                                 dependencyCheck additionalArguments: '--scan . --format HTML --format XML --out ../OWASP-Reports --nvdApiKey $NVD_KEY --noupdate  --enableExperimental', 
                                         odcInstallation: 'OWASP-Default'
@@ -215,7 +214,7 @@ pipeline {
             when { expression { currentBuild.result != 'SUCCESS' } }
             steps {
                 // Очікуємо відповіді від сервера SonarQube. Якщо код низької якості, пайплайн впаде
-                timeout(time: 10, unit: 'MINUTES') {
+                timeout(time: 2, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true, credentialsId: "${SONAR_TOKEN}"
                 }
             }
