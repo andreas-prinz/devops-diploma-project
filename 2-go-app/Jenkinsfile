@@ -53,14 +53,7 @@ pipeline {
                     echo "Хеш комміту попередньої успішної збірки: ${previousCommit}"
                     
                     // Перевірка на ручний запуск (абсолютно дозволений метод Jenkins)
-                    def buildCauses = currentBuild.getBuildCauses()
-                    def isManualBuild = false
-                    
-                    for (cause in buildCauses) {
-                        if (cause._class.contains("UserIdCause")) {
-                            isManualBuild = true
-                        }
-                    }
+                    def isManualBuild = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause') ? true : false
                     
                     // Якщо білд запущено вручну — повністю пропускаємо всі заборони
                     if (isManualBuild) {
